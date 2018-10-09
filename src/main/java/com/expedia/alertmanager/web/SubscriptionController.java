@@ -29,7 +29,7 @@ public class SubscriptionController {
     @Autowired
     private SubscriptionRepository subscriptionRepository;
 
-    @RequestMapping(value = "/subscription", method = RequestMethod.POST)
+    @RequestMapping(value = "/subscriptions", method = RequestMethod.POST)
     public Subscription createSubscription(SubscriptionRequest subscriptionRequest) {
         Subscription subscription = new Subscription(subscriptionRequest.getMetricId(),
             subscriptionRequest.getModelId(),

@@ -1,0 +1,24 @@
+spring:
+  mail:
+    host: <smtp host>
+    port: <smtp port>
+    username: <user name>
+    password: <password>
+    properties:
+      mail.transport.protocol: smtp
+      mail.smtp.port: 25
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test
+    username: <user name>
+    password: <password>
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+
+

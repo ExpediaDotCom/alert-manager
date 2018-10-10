@@ -31,4 +31,4 @@ JAVA_OPTS="${JAVA_OPTS} \
     -Dapplication.home=${APP_HOME}"
 
 
-exec java ${JAVA_OPTS} -jar "${APP_HOME}/alert-manager.jar" --spring.config.location=/config/application.properties
+exec java ${JAVA_OPTS} -jar "${APP_HOME}/alert-manager.jar" --spring.config.location=/config/application.yml

@@ -13,4 +13,5 @@ all: clean build
 
 # build all and release
 release: all
+	./build.sh -b
 	./build.sh --release

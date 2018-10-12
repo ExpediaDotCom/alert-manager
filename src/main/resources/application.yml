@@ -1,9 +1,10 @@
 spring:
   mail:
     host: <smtp host>
-    port: <smtp port>
+    port: 25
     username: <user name>
     password: <password>
+    fromAddress: <from address>
     properties:
       mail.transport.protocol: smtp
       mail.smtp.port: 25
@@ -19,6 +20,7 @@ spring:
 
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
+
 
 
 

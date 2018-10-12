@@ -15,16 +15,16 @@
  */
 package com.expedia.alertmanager.conf;
 
+import com.expedia.metrics.IdFactory;
+import com.expedia.metrics.metrictank.MetricTankIdFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 @Configuration
 public class AppConf {
 
     @Bean
-    public JavaMailSender getJavaMailSender() {
-        return new JavaMailSenderImpl();
+    public IdFactory getIdFactory() {
+        return new MetricTankIdFactory();
     }
 }

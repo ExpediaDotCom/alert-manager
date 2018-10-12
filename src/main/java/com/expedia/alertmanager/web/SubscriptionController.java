@@ -15,25 +15,43 @@
  */
 package com.expedia.alertmanager.web;
 
-import com.expedia.alertmanager.dao.SubscriptionRepository;
+import com.expedia.alertmanager.dao.SubscriptionMetricDetectorMappingRepository;
 import com.expedia.alertmanager.entity.Subscription;
-import com.expedia.alertmanager.entity.SubscriptionType;
+import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class SubscriptionController {
 
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private SubscriptionMetricDetectorMappingRepository subscriptionMetricDetectorMappingRepo;
 
-    @RequestMapping(value = "/subscriptions", method = RequestMethod.POST)
-    public Subscription createSubscription(SubscriptionRequest subscriptionRequest) {
-        Subscription subscription = new Subscription(subscriptionRequest.getMetricId(),
-            subscriptionRequest.getModelId(),
-            new SubscriptionType(subscriptionRequest.getSubscriptionType()), subscriptionRequest.getTarget());
-        return subscriptionRepository.save(subscription);
+    @RequestMapping(value = "/subscriptions", method = {RequestMethod.POST, RequestMethod.PUT})
+    public List<SubscriptionMetricDetectorMapping> createSubscriptions(
+        @RequestBody List<SubscriptionRequest> subscriptions) {
+        List<SubscriptionMetricDetectorMapping> subscriptionResult =  new ArrayList<>();
+        subscriptions.forEach(subscriptionRequest -> {
+            Subscription subscription = new Subscription(subscriptionRequest.getSubscriptionType(),
+                subscriptionRequest.getEndpoint());
+            SubscriptionMetricDetectorMapping subscriptionMetricDetectorMapping =
+                new SubscriptionMetricDetectorMapping(subscriptionRequest.getMetricId(),
+                    subscriptionRequest.getDetectorId(), subscription);
+            subscriptionResult.add(subscriptionMetricDetectorMappingRepo.save(subscriptionMetricDetectorMapping));
+        });
+        return subscriptionResult;
+    }
+
+    @RequestMapping(value = "/subscriptions/{metricId}/{detectorId}", method = RequestMethod.GET)
+    public List<SubscriptionMetricDetectorMapping> getSubscriptions(@PathVariable String metricId,
+                                                                    @PathVariable String detectorId) {
+        return subscriptionMetricDetectorMappingRepo.findByMetricIdAndDetectorId(metricId, detectorId);
     }
 }

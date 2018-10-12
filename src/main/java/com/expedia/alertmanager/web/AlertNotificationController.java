@@ -15,11 +15,13 @@
  */
 package com.expedia.alertmanager.web;
 
-import com.expedia.alertmanager.dao.SubscriptionRepository;
-import com.expedia.alertmanager.entity.Subscription;
+import com.expedia.alertmanager.dao.SubscriptionMetricDetectorMappingRepository;
+import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
 import com.expedia.alertmanager.notifier.NotifierFactory;
 import com.expedia.alertmanager.temp.JsonPojoDeserializer;
 import com.expedia.alertmanager.temp.MappedMetricData;
+import com.expedia.metrics.IdFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,18 +31,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 public class AlertNotificationController {
 
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private SubscriptionMetricDetectorMappingRepository subscriptionMetricDetectorMappingRepo;
 
     @Autowired
     private NotifierFactory notifierFactory;
+
+    @Autowired
+    private IdFactory idFactory;
 
     private final JsonPojoDeserializer<MappedMetricData> jsonPojoDeserializer = new JsonPojoDeserializer();
 
@@ -53,10 +60,17 @@ public class AlertNotificationController {
 
     @RequestMapping(value = "/alerts", method = RequestMethod.POST)
     public ResponseEntity notifyAlert(@RequestBody String mappedMetricDataJson) {
+        log.info("Received alert : {}", mappedMetricDataJson);
         MappedMetricData mappedMetricData = deserialize(mappedMetricDataJson);
-        List<Subscription> subscriptions = subscriptionRepository.findByMetricIdAndModelId("1", "1");
-        subscriptions.forEach(subscription -> {
-            notifierFactory.createNotifier(subscription).execute(mappedMetricData);
+        String detectorId = mappedMetricData.getDetectorUuid().toString();
+        String metricId = idFactory.getId(mappedMetricData.getMetricData().getMetricDefinition());
+        //TODO - remove these, added temporarily
+        log.info("Metric Id : {}", metricId);
+        List<SubscriptionMetricDetectorMapping> subscriptnMetricDetectrMappings
+            = subscriptionMetricDetectorMappingRepo.findByMetricIdAndDetectorId(metricId, detectorId);
+        log.info("Subscription Details : {}", Arrays.toString(subscriptnMetricDetectrMappings.toArray()));
+        subscriptnMetricDetectrMappings.forEach(subscriptnMetricDetectrMapping -> {
+            notifierFactory.createNotifier(subscriptnMetricDetectrMapping.getSubscription()).execute(mappedMetricData);
         });
         return new ResponseEntity(HttpStatus.OK);
     }

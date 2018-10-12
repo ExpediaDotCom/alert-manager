@@ -1,0 +1,7 @@
+spring:
+  mail:
+    host: <smtp host>
+    port: 25
+    username: <user name>
+    password: <password>
+    fromAddress: <from address>

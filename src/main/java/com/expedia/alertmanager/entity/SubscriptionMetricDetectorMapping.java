@@ -16,25 +16,44 @@
 package com.expedia.alertmanager.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import java.sql.Timestamp;
 @Data
 @NoArgsConstructor
-@Entity(name = "subscription_type")
-public class SubscriptionType {
-
+@ToString
+@EqualsAndHashCode
+@Entity(name = "subscription_metric_detector_mapping")
+public class SubscriptionMetricDetectorMapping {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String type;
+    @Column(name = "metric_id")
+    private String metricId;
 
-    public SubscriptionType(String type) {
-        this.type = type;
+    @Column(name = "detector_id")
+    private String detectorId;
+
+    @OneToOne
+    @JoinColumn(name = "subscription_id")
+    private Subscription subscription;
+
+    @Column(name = "date_created")
+    private Timestamp timestamp;
+
+    public SubscriptionMetricDetectorMapping(String metricId, String detectorId, Subscription subscription) {
+        this.metricId = metricId;
+        this.detectorId = detectorId;
+        this.subscription = subscription;
     }
 }

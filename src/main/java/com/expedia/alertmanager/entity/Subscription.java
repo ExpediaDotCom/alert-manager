@@ -16,44 +16,41 @@
 package com.expedia.alertmanager.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import java.sql.Timestamp;
 
 @Data
 @NoArgsConstructor
-@Entity(name = "subscription")
+@ToString
+@EqualsAndHashCode
+@Entity(name = "subscriptions")
 public class Subscription {
+    public static final String EMAIL_TYPE = "EMAIL";
+    public static final String PD_TYPE = "PD";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "metric_id")
-    private String metricId;
+    private String type;
 
-    @Column(name = "model_id")
-    private String modelId;
+    private String endpoint;
 
-    @ManyToOne
-    @JoinColumn(name = "type_id")
-    private SubscriptionType subscriptionType;
+    private boolean enabled;
 
-    private String target;
-
-    @Column(name = "updated_ts")
+    @Column(name = "date_created")
     private Timestamp timestamp;
 
-    public Subscription(String metricId, String modelId, SubscriptionType subscriptionType, String target) {
-        this.metricId = metricId;
-        this.modelId = modelId;
-        this.subscriptionType = subscriptionType;
-        this.target = target;
+    public Subscription(String type, String endpoint) {
+        this.type = type;
+        this.endpoint = endpoint;
     }
 }

@@ -15,8 +15,13 @@
  */
 package com.expedia.alertmanager.dao;
 
-import com.expedia.alertmanager.entity.SubscriptionType;
+import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
-public interface SubscriptionTypeRepository extends CrudRepository<SubscriptionType, Long> {
+import java.util.List;
+
+public interface SubscriptionMetricDetectorMappingRepository extends CrudRepository<SubscriptionMetricDetectorMapping, Long> {
+    @Query("SELECT s FROM subscription_metric_detector_mapping s where s.metricId = ?1 AND s.detectorId = ?2")
+    public List<SubscriptionMetricDetectorMapping> findByMetricIdAndDetectorId(String metricId, String detectorId);
 }

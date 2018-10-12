@@ -16,11 +16,14 @@
 package com.expedia.alertmanager.web;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class SubscriptionRequest {
-    private String modelId;
     private String metricId;
+    private String detectorId;
     private String subscriptionType;
-    private String target;
+    private String endpoint;
+    private String createdBy;
 }

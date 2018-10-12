@@ -23,10 +23,12 @@ public class EmailNotifier implements Notifier {
 
     private JavaMailSender emailSender;
     private final String to;
+    private final String from;
 
-    public EmailNotifier(JavaMailSender emailSender, String to) {
+    public EmailNotifier(JavaMailSender emailSender, String to, String from) {
         this.emailSender = emailSender;
         this.to = to;
+        this.from = from;
     }
 
     @Override

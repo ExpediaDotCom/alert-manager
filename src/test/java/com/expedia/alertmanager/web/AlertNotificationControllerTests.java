@@ -15,16 +15,18 @@
  */
 package com.expedia.alertmanager.web;
 
-import com.expedia.alertmanager.dao.SubscriptionRepository;
+import com.expedia.alertmanager.dao.SubscriptionMetricDetectorMappingRepository;
 import com.expedia.alertmanager.entity.Subscription;
-import com.expedia.alertmanager.entity.SubscriptionType;
+import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
 import com.expedia.alertmanager.notifier.Notifier;
 import com.expedia.alertmanager.notifier.NotifierFactory;
 import com.expedia.alertmanager.temp.AnomalyLevel;
 import com.expedia.alertmanager.temp.AnomalyResult;
 import com.expedia.alertmanager.temp.MappedMetricData;
+import com.expedia.metrics.IdFactory;
 import com.expedia.metrics.MetricData;
 import com.expedia.metrics.MetricDefinition;
+import com.expedia.metrics.TagCollection;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +38,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -53,10 +57,13 @@ public class AlertNotificationControllerTests {
     private MockMvc mvc;
 
     @MockBean
+    private IdFactory idFactory;
+
+    @MockBean
     private NotifierFactory notifierFactory;
 
     @MockBean
-    private SubscriptionRepository subscriptionRepository;
+    private SubscriptionMetricDetectorMappingRepository subscriptionMetricDetectorMappingRepo;
 
     @Test
     public void givenAnAlert_whenASubscriptionPresent_shouldInvokeNotifier()
@@ -64,11 +71,18 @@ public class AlertNotificationControllerTests {
 
         //given an alert
         MappedMetricData mappedMetricData = new MappedMetricData();
-        MetricDefinition metricDefinition = new MetricDefinition("test");
+        Map<String, String> tags = new HashMap();
+        tags.put(MetricDefinition.MTYPE, "mtype");
+        tags.put(MetricDefinition.UNIT, "unit");
+        tags.put("org_id", "1");
+        tags.put("interval", "30");
+        TagCollection MINIMAL_TAGS = new TagCollection(tags);
+        MetricDefinition metricDefinition = new MetricDefinition("test", MINIMAL_TAGS, TagCollection.EMPTY);
         MetricData metricData = new MetricData(metricDefinition, 1, 10_000);
         mappedMetricData.setMetricData(metricData);
         mappedMetricData.setDetectorType("cusum");
-        mappedMetricData.setDetectorUuid(UUID.randomUUID());
+        UUID detectorId = UUID.randomUUID();
+        mappedMetricData.setDetectorUuid(detectorId);
         AnomalyResult anomalyResult = new AnomalyResult();
         anomalyResult.setAnomalyLevel(AnomalyLevel.STRONG);
         anomalyResult.setDetectorUUID(mappedMetricData.getDetectorUuid());
@@ -76,17 +90,20 @@ public class AlertNotificationControllerTests {
         mappedMetricData.setAnomalyResult(anomalyResult);
 
         //when email subscription
-        List<Subscription> subscriptions = new ArrayList<>();
-        subscriptions.add(new Subscription("1", "1", new SubscriptionType("email"),
-            "email@email.com"));
-        given(subscriptionRepository.findByMetricIdAndModelId("1", "1")).willReturn(subscriptions);
+        List<SubscriptionMetricDetectorMapping> subscriptionMetricDetectorMappings = new ArrayList<>();
+        String metricId = "1.1075bc5daeb15245a1933a0344c5a23c";
+        subscriptionMetricDetectorMappings.add(new SubscriptionMetricDetectorMapping(metricId, detectorId.toString(),
+            new Subscription(Subscription.EMAIL_TYPE, "email@email.com")));
+        given(idFactory.getId(metricDefinition)).willReturn(metricId);
+        given(subscriptionMetricDetectorMappingRepo.findByMetricIdAndDetectorId(metricId, detectorId.toString()))
+            .willReturn(subscriptionMetricDetectorMappings);
         Notifier mockNotifier = mock(Notifier.class);
         given(notifierFactory.createNotifier(any())).willReturn(mockNotifier);
 
         String content = new ObjectMapper().writeValueAsString(mappedMetricData);
-        mvc.perform(post("/alerts", content)
+        mvc.perform(post("/alerts")
             .content(content)
-            .contentType(MediaType.ALL))
+            .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
         verify(mockNotifier).execute(any());
     }

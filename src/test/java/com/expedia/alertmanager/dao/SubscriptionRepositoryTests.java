@@ -16,7 +16,7 @@
 package com.expedia.alertmanager.dao;
 
 import com.expedia.alertmanager.entity.Subscription;
-import com.expedia.alertmanager.entity.SubscriptionType;
+import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,29 +34,28 @@ public class SubscriptionRepositoryTests {
     private TestEntityManager entityManager;
 
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private SubscriptionMetricDetectorMappingRepository subscriptionMetricDetectorMappingRepo;
 
     @Test
     public void whenFindByMetricIdAndModelId_thenReturnSubscriptions() {
 
-        //init
-        SubscriptionType email = new SubscriptionType("email");
-        entityManager.persist(email);
-
         // given
-        Subscription subscription = new Subscription("metricId", "modelId",
-            email, "email@email.com");
+        Subscription subscription = new Subscription(Subscription.EMAIL_TYPE, "email@email.com");
+        SubscriptionMetricDetectorMapping subscriptionMetricDetectorMapping = new SubscriptionMetricDetectorMapping(
+            "metricId", "detectorId", subscription);
         entityManager.persist(subscription);
+        entityManager.persist(subscriptionMetricDetectorMapping);
         entityManager.flush();
 
         // when
-        Subscription found =
-            subscriptionRepository.findByMetricIdAndModelId("metricId", "modelId").get(0);
+        SubscriptionMetricDetectorMapping found =
+            subscriptionMetricDetectorMappingRepo.findByMetricIdAndDetectorId(
+                "metricId", "detectorId").get(0);
 
         // then
-        assertThat(found.getModelId())
-            .isEqualTo(subscription.getModelId());
+        assertThat(found.getDetectorId())
+            .isEqualTo(subscriptionMetricDetectorMapping.getDetectorId());
         assertThat(found.getMetricId())
-            .isEqualTo(subscription.getMetricId());
+            .isEqualTo(subscriptionMetricDetectorMapping.getMetricId());
     }
 }

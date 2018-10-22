@@ -15,6 +15,7 @@
  */
 package com.expedia.alertmanager.web;
 
+import com.expedia.alertmanager.conf.AppConf;
 import com.expedia.alertmanager.dao.SubscriptionMetricDetectorMappingRepository;
 import com.expedia.alertmanager.entity.Subscription;
 import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
@@ -33,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -51,6 +53,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
+@Import(AppConf.class)
 @WebMvcTest(AlertNotificationController.class)
 public class AlertNotificationControllerTests {
     @Autowired

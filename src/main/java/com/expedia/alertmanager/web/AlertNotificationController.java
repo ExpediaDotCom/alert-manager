@@ -18,7 +18,6 @@ package com.expedia.alertmanager.web;
 import com.expedia.alertmanager.dao.SubscriptionMetricDetectorMappingRepository;
 import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
 import com.expedia.alertmanager.notifier.NotifierFactory;
-import com.expedia.alertmanager.temp.JsonPojoDeserializer;
 import com.expedia.alertmanager.temp.MappedMetricData;
 import com.expedia.metrics.IdFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +29,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -49,19 +45,9 @@ public class AlertNotificationController {
     @Autowired
     private IdFactory idFactory;
 
-    private final JsonPojoDeserializer<MappedMetricData> jsonPojoDeserializer = new JsonPojoDeserializer();
-
-    @PostConstruct
-    public void init() {
-        Map<String, Class> configs = new HashMap<>();
-        configs.put("JsonPojoClass", MappedMetricData.class);
-        jsonPojoDeserializer.configure(configs);
-    }
-
     @RequestMapping(value = "/alerts", method = RequestMethod.POST)
-    public ResponseEntity notifyAlert(@RequestBody String mappedMetricDataJson) {
-        log.info("Received alert : {}", mappedMetricDataJson);
-        MappedMetricData mappedMetricData = deserialize(mappedMetricDataJson);
+    public ResponseEntity notifyAlert(@RequestBody MappedMetricData mappedMetricData) {
+        log.info("Received alert : {}", mappedMetricData);
         String detectorId = mappedMetricData.getDetectorUuid().toString();
         String metricId = idFactory.getId(mappedMetricData.getMetricData().getMetricDefinition());
         //TODO - remove these, added temporarily
@@ -73,10 +59,5 @@ public class AlertNotificationController {
             notifierFactory.createNotifier(subscriptnMetricDetectrMapping.getSubscription()).execute(mappedMetricData);
         });
         return new ResponseEntity(HttpStatus.OK);
-    }
-
-    //FIXME - we need to see if we can do the deserialization using the default deserializer provided by spring
-    private MappedMetricData deserialize(String mappedMetricDataJson) {
-        return jsonPojoDeserializer.deserialize(mappedMetricDataJson.getBytes());
     }
 }

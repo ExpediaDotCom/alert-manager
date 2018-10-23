@@ -15,10 +15,18 @@ public class NotifierFactory {
     @Value("${spring.mail.fromAddress}")
     private String fromEmail;
 
+    @Value("${aws.ses.enabled:true}")
+    private boolean useAwsSes;
+
     public Notifier createNotifier(Subscription subscription) {
         switch (subscription.getType()) {
             case Subscription.EMAIL_TYPE:
-                return new EmailNotifier(emailSender, subscription.getEndpoint(), fromEmail);
+                if (useAwsSes) {
+                    return new AwsSesNotifier(subscription.getEndpoint(), fromEmail);
+                }
+                else {
+                    return new EmailNotifier(emailSender, subscription.getEndpoint(), fromEmail);
+                }
             case Subscription.PD_TYPE:
                 return new PagerDutyNotifier("", subscription.getEndpoint());
             default:

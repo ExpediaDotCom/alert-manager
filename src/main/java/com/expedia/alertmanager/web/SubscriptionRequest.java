@@ -23,7 +23,9 @@ import lombok.NoArgsConstructor;
 public class SubscriptionRequest {
     private String metricId;
     private String detectorId;
-    private String subscriptionType;
+    private String name;
+    private String description;
+    private String type;
     private String endpoint;
     private String createdBy;
 }

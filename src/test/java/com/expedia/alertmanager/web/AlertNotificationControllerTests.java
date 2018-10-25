@@ -16,9 +16,8 @@
 package com.expedia.alertmanager.web;
 
 import com.expedia.alertmanager.conf.AppConf;
-import com.expedia.alertmanager.dao.SubscriptionMetricDetectorMappingRepository;
+import com.expedia.alertmanager.dao.SubscriptionRepository;
 import com.expedia.alertmanager.entity.Subscription;
-import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
 import com.expedia.alertmanager.notifier.Notifier;
 import com.expedia.alertmanager.notifier.NotifierFactory;
 import com.expedia.alertmanager.temp.AnomalyLevel;
@@ -66,7 +65,7 @@ public class AlertNotificationControllerTests {
     private NotifierFactory notifierFactory;
 
     @MockBean
-    private SubscriptionMetricDetectorMappingRepository subscriptionMetricDetectorMappingRepo;
+    private SubscriptionRepository subscriptionRepo;
 
     @Test
     public void givenAnAlert_whenASubscriptionPresent_shouldInvokeNotifier()
@@ -93,13 +92,15 @@ public class AlertNotificationControllerTests {
         mappedMetricData.setAnomalyResult(anomalyResult);
 
         //when email subscription
-        List<SubscriptionMetricDetectorMapping> subscriptionMetricDetectorMappings = new ArrayList<>();
+        List<Subscription> subscriptions = new ArrayList<>();
         String metricId = "1.1075bc5daeb15245a1933a0344c5a23c";
-        subscriptionMetricDetectorMappings.add(new SubscriptionMetricDetectorMapping(metricId, detectorId.toString(),
-            new Subscription(Subscription.EMAIL_TYPE, "email@email.com")));
+        subscriptions.add(new Subscription("1075bc5daeb15245a1933a0344c5a23c",
+            "b0987951-5db1-451e-861a-a7a5ac3285df", "Booking Alert",
+            "Changed Trend", Subscription.EMAIL_TYPE,
+            "email@email.com", "user"));
         given(idFactory.getId(metricDefinition)).willReturn(metricId);
-        given(subscriptionMetricDetectorMappingRepo.findByMetricIdAndDetectorId(metricId, detectorId.toString()))
-            .willReturn(subscriptionMetricDetectorMappings);
+        given(subscriptionRepo.findByDetectorIdAndMetricId(detectorId.toString(), metricId))
+            .willReturn(subscriptions);
         Notifier mockNotifier = mock(Notifier.class);
         given(notifierFactory.createNotifier(any())).willReturn(mockNotifier);
 

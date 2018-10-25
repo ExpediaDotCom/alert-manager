@@ -16,7 +16,6 @@
 package com.expedia.alertmanager.dao;
 
 import com.expedia.alertmanager.entity.Subscription;
-import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,28 +33,26 @@ public class SubscriptionRepositoryTests {
     private TestEntityManager entityManager;
 
     @Autowired
-    private SubscriptionMetricDetectorMappingRepository subscriptionMetricDetectorMappingRepo;
+    private SubscriptionRepository subscriptionRepo;
 
     @Test
-    public void whenFindByMetricIdAndModelId_thenReturnSubscriptions() {
+    public void whenFindByDetectorIdAndMetricId_thenReturnSubscriptions() {
 
         // given
-        Subscription subscription = new Subscription(Subscription.EMAIL_TYPE, "email@email.com");
-        SubscriptionMetricDetectorMapping subscriptionMetricDetectorMapping = new SubscriptionMetricDetectorMapping(
-            "metricId", "detectorId", subscription);
+        Subscription subscription = new Subscription("metricId", "detectorId", "Booking Alert",
+            "change in trend", Subscription.EMAIL_TYPE, "email@email.com", "user");
         entityManager.persist(subscription);
-        entityManager.persist(subscriptionMetricDetectorMapping);
         entityManager.flush();
 
         // when
-        SubscriptionMetricDetectorMapping found =
-            subscriptionMetricDetectorMappingRepo.findByMetricIdAndDetectorId(
-                "metricId", "detectorId").get(0);
+        Subscription found =
+            subscriptionRepo.findByDetectorIdAndMetricId(
+                "detectorId","metricId").get(0);
 
         // then
         assertThat(found.getDetectorId())
-            .isEqualTo(subscriptionMetricDetectorMapping.getDetectorId());
+            .isEqualTo(subscription.getDetectorId());
         assertThat(found.getMetricId())
-            .isEqualTo(subscriptionMetricDetectorMapping.getMetricId());
+            .isEqualTo(subscription.getMetricId());
     }
 }

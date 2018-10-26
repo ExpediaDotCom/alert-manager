@@ -76,4 +76,25 @@ public class SubscriptionRepositoryTests {
         assertThat(found.getMetricId())
             .isEqualTo(subscription.getMetricId());
     }
+
+    @Test
+    public void whenFindByOwner_thenReturnSubscriptions() {
+
+        // given
+        Subscription subscription = new Subscription(null, "detectorId", "Booking Alert",
+            "change in trend", Subscription.EMAIL_TYPE, "email@email.com", "user");
+        entityManager.persist(subscription);
+        entityManager.flush();
+
+        // when
+        Subscription found =
+            subscriptionRepo.findByOwner(
+                "user").get(0);
+
+        // then
+        assertThat(found.getDetectorId())
+            .isEqualTo(subscription.getDetectorId());
+        assertThat(found.getMetricId())
+            .isEqualTo(subscription.getMetricId());
+    }
 }

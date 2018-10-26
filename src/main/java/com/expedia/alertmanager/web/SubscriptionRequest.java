@@ -27,5 +27,5 @@ public class SubscriptionRequest {
     private String description;
     private String type;
     private String endpoint;
-    private String createdBy;
+    private String owner;
 }

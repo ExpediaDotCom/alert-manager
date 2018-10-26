@@ -41,10 +41,10 @@ public class NotifierFactory {
         switch (subscription.getType()) {
             case Subscription.EMAIL_TYPE:
                 if (useAwsSes) {
-                    return new AwsSesNotifier(subscription.getEndpoint(), fromEmail, mailContentBuilder);
+                    return new AwsSesNotifier(subscription, fromEmail, mailContentBuilder);
                 }
                 else {
-                    return new EmailNotifier(emailSender, subscription.getEndpoint(), fromEmail, mailContentBuilder);
+                    return new EmailNotifier(emailSender, subscription, fromEmail, mailContentBuilder);
                 }
             case Subscription.PD_TYPE:
                 return new PagerDutyNotifier("", subscription.getEndpoint());

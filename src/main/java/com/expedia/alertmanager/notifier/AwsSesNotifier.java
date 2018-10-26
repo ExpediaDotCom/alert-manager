@@ -24,6 +24,7 @@ import com.amazonaws.services.simpleemail.model.Destination;
 import com.amazonaws.services.simpleemail.model.Message;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendEmailResult;
+import com.expedia.alertmanager.entity.Subscription;
 import com.expedia.alertmanager.temp.MappedMetricData;
 import com.expedia.alertmanager.util.MailContentBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -31,12 +32,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AwsSesNotifier implements Notifier {
 
-    private final String to;
+    private final Subscription subscription;
     private final String from;
     private final MailContentBuilder mailContentBuilder;
 
-    public AwsSesNotifier(String to, String from, MailContentBuilder mailContentBuilder) {
-        this.to = to;
+    public AwsSesNotifier(Subscription subscription, String from, MailContentBuilder mailContentBuilder) {
+        this.subscription = subscription;
         this.from = from;
         this.mailContentBuilder = mailContentBuilder;
     }
@@ -49,14 +50,14 @@ public class AwsSesNotifier implements Notifier {
                     .withRegion(Regions.US_WEST_2).build();
             SendEmailRequest request = new SendEmailRequest()
                 .withDestination(
-                    new Destination().withToAddresses(to))
+                    new Destination().withToAddresses(subscription.getEndpoint().split(EMAIL_DELIMITER)))
                 .withMessage(new Message()
                     .withBody(new Body()
                         .withHtml(new Content()
                             .withCharset("UTF-8").withData(mailContentBuilder.build(mappedMetricData))))
                     .withSubject(new Content()
                         .withCharset("UTF-8").withData(String.format(EMAIL_SUB,
-                            mappedMetricData.getMetricData().getMetricDefinition().getKey()))))
+                            subscription.getName()))))
                 .withSource(from);
             final SendEmailResult sendEmailResult = client.sendEmail(request);
             log.info("Email sent status: {}", sendEmailResult);

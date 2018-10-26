@@ -18,7 +18,8 @@ package com.expedia.alertmanager.notifier;
 import com.expedia.alertmanager.temp.MappedMetricData;
 
 public interface Notifier {
-    static String EMAIL_SUB = "[Alert Manager Alert] You have an Alert for %s";
+    static String EMAIL_SUB = "[Alert Manager Alert] You have an Alert : %s";
+    static String EMAIL_DELIMITER = ",";
     void execute(MappedMetricData mappedMetricData);
 
 }

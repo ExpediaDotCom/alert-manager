@@ -46,9 +46,13 @@ public class SubscriptionController {
         return subscriptionResult;
     }
 
-    @RequestMapping(value = "/subscriptions/{metricId}/{detectorId}", method = RequestMethod.GET)
-    public List<Subscription> getSubscriptions(@PathVariable String metricId,
-                                                                    @PathVariable String detectorId) {
-        return subscriptionRepo.findByDetectorIdAndMetricId(metricId, detectorId);
+    @RequestMapping(value = "/subscriptions/{detectorId}/{metricId}", method = RequestMethod.GET)
+    public List<Subscription> getSubscriptionsByDetectorIdAndMetricId(@PathVariable String detectorId, @PathVariable String metricId) {
+        return subscriptionRepo.findByDetectorIdAndMetricId(detectorId, metricId);
+    }
+
+    @RequestMapping(value = "/subscriptions/{detectorId}", method = RequestMethod.GET)
+    public List<Subscription> getSubscriptionsByDetectorId(@PathVariable String detectorId) {
+        return subscriptionRepo.findByDetectorId(detectorId);
     }
 }

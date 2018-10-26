@@ -15,9 +15,8 @@
  */
 package com.expedia.alertmanager.web;
 
-import com.expedia.alertmanager.dao.SubscriptionMetricDetectorMappingRepository;
+import com.expedia.alertmanager.dao.SubscriptionRepository;
 import com.expedia.alertmanager.entity.Subscription;
-import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +45,7 @@ public class SubscriptionControllerTests {
     private MockMvc mvc;
 
     @MockBean
-    private SubscriptionMetricDetectorMappingRepository subscriptionMetricDetectorMappingRepo;
+    private SubscriptionRepository subscriptionRepo;
 
     @Test
     public void givenACreateSubscriptionRequest_shouldPersistSubscriptions()
@@ -57,41 +56,44 @@ public class SubscriptionControllerTests {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
         subscriptionRequest.setMetricId("metricId");
         subscriptionRequest.setDetectorId("detectorId");
-        subscriptionRequest.setSubscriptionType("EMAIL");
+        subscriptionRequest.setName("name");
+        subscriptionRequest.setDescription("description");
+        subscriptionRequest.setType("EMAIL");
         subscriptionRequest.setEndpoint("email@email.com");
         subscriptionRequest.setCreatedBy("user");
         subscriptionRequestList.add(subscriptionRequest);
 
         String content = new ObjectMapper().writeValueAsString(subscriptionRequestList);
-        given(subscriptionMetricDetectorMappingRepo.save(any(SubscriptionMetricDetectorMapping.class)))
-            .willReturn(new SubscriptionMetricDetectorMapping());
+        given(subscriptionRepo.save(any(Subscription.class)))
+            .willReturn(new Subscription());
 
         //verify
         mvc.perform(post("/subscriptions")
             .content(content)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-        verify(subscriptionMetricDetectorMappingRepo).save(any(SubscriptionMetricDetectorMapping.class));
+        verify(subscriptionRepo).save(any(Subscription.class));
     }
 
     @Test
     public void givenAMetricIdAndDetectorId_shouldReturnSubscriptions()
         throws Exception {
 
-        //given metric id and detector id
-        given(subscriptionMetricDetectorMappingRepo.findByMetricIdAndDetectorId(
-            "1075bc5daeb15245a1933a0344c5a23c",
-            "b0987951-5db1-451e-861a-a7a5ac3285df"))
+        //given detector id and metric id
+        given(subscriptionRepo.findByDetectorIdAndMetricId(
+            "b0987951-5db1-451e-861a-a7a5ac3285df",
+            "1075bc5daeb15245a1933a0344c5a23c"))
             .willReturn(
-                Arrays.asList(new SubscriptionMetricDetectorMapping("1075bc5daeb15245a1933a0344c5a23c",
-                    "b0987951-5db1-451e-861a-a7a5ac3285df", new Subscription(Subscription.EMAIL_TYPE,
-                    "email@email.com"))));
+                Arrays.asList(new Subscription("1075bc5daeb15245a1933a0344c5a23c",
+                    "b0987951-5db1-451e-861a-a7a5ac3285df", "Booking Alert",
+                    "Changed Trend", Subscription.EMAIL_TYPE,
+                    "email@email.com", "user")));
 
         //verify
-        mvc.perform(get("/subscriptions/1075bc5daeb15245a1933a0344c5a23c/b0987951-5db1-451e-861a-a7a5ac3285df")
+        mvc.perform(get("/subscriptions/b0987951-5db1-451e-861a-a7a5ac3285df/1075bc5daeb15245a1933a0344c5a23c")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.[0].metricId").value("1075bc5daeb15245a1933a0344c5a23c"));
-        verify(subscriptionMetricDetectorMappingRepo).findByMetricIdAndDetectorId(any(), any());
+        verify(subscriptionRepo).findByDetectorIdAndMetricId(any(), any());
     }
 }

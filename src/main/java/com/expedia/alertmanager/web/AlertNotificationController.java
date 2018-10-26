@@ -15,8 +15,8 @@
  */
 package com.expedia.alertmanager.web;
 
-import com.expedia.alertmanager.dao.SubscriptionMetricDetectorMappingRepository;
-import com.expedia.alertmanager.entity.SubscriptionMetricDetectorMapping;
+import com.expedia.alertmanager.dao.SubscriptionRepository;
+import com.expedia.alertmanager.entity.Subscription;
 import com.expedia.alertmanager.notifier.NotifierFactory;
 import com.expedia.alertmanager.temp.MappedMetricData;
 import com.expedia.metrics.IdFactory;
@@ -37,7 +37,7 @@ import java.util.List;
 public class AlertNotificationController {
 
     @Autowired
-    private SubscriptionMetricDetectorMappingRepository subscriptionMetricDetectorMappingRepo;
+    private SubscriptionRepository subscriptionRepo;
 
     @Autowired
     private NotifierFactory notifierFactory;
@@ -52,11 +52,11 @@ public class AlertNotificationController {
         String metricId = idFactory.getId(mappedMetricData.getMetricData().getMetricDefinition());
         //TODO - remove these, added temporarily
         log.info("Metric Id : {}", metricId);
-        List<SubscriptionMetricDetectorMapping> subscriptnMetricDetectrMappings
-            = subscriptionMetricDetectorMappingRepo.findByMetricIdAndDetectorId(metricId, detectorId);
-        log.info("Subscription Details : {}", Arrays.toString(subscriptnMetricDetectrMappings.toArray()));
-        subscriptnMetricDetectrMappings.forEach(subscriptnMetricDetectrMapping -> {
-            notifierFactory.createNotifier(subscriptnMetricDetectrMapping.getSubscription()).execute(mappedMetricData);
+        List<Subscription> subscriptions
+            = subscriptionRepo.findByDetectorIdAndMetricId(detectorId, metricId);
+        log.info("Subscription Details : {}", Arrays.toString(subscriptions.toArray()));
+        subscriptions.forEach(subscription -> {
+            notifierFactory.createNotifier(subscription).execute(mappedMetricData);
         });
         return new ResponseEntity(HttpStatus.OK);
     }

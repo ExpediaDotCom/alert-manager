@@ -31,7 +31,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
-@Entity(name = "subscriptions")
+@Entity(name = "subscription")
 public class Subscription {
     public static final String EMAIL_TYPE = "EMAIL";
     public static final String PD_TYPE = "PD";
@@ -40,17 +40,37 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "metric_id")
+    private String metricId;
+
+    @Column(name = "detector_id")
+    private String detectorId;
+
+    private String name;
+
+    private String description;
+
     private String type;
 
     private String endpoint;
 
+    private String details;
+
     private boolean enabled;
+
+    private String owner;
 
     @Column(name = "date_created")
     private Timestamp timestamp;
 
-    public Subscription(String type, String endpoint) {
+    public Subscription(String metricId, String detectorId, String name, String description,
+                        String type, String endpoint, String owner) {
+        this.metricId = metricId;
+        this.detectorId = detectorId;
+        this.name = name;
+        this.description = description;
         this.type = type;
         this.endpoint = endpoint;
+        this.owner = owner;
     }
 }

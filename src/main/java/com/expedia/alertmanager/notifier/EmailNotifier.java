@@ -16,28 +16,41 @@
 package com.expedia.alertmanager.notifier;
 
 import com.expedia.alertmanager.temp.MappedMetricData;
-import org.springframework.mail.SimpleMailMessage;
+import com.expedia.alertmanager.util.MailContentBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
+import javax.mail.internet.MimeMessage;
+
+@Slf4j
 public class EmailNotifier implements Notifier {
 
-    private JavaMailSender emailSender;
+    private final JavaMailSender emailSender;
     private final String to;
     private final String from;
+    private final MailContentBuilder mailContentBuilder;
 
-    public EmailNotifier(JavaMailSender emailSender, String to, String from) {
+    public EmailNotifier(JavaMailSender emailSender, String to, String from, MailContentBuilder mailContentBuilder) {
         this.emailSender = emailSender;
         this.to = to;
         this.from = from;
+        this.mailContentBuilder = mailContentBuilder;
     }
 
     @Override
     public void execute(MappedMetricData mappedMetricData) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        //TODO - Use email template for email
-        message.setSubject("Alert for " + mappedMetricData.getMetricData().getMetricDefinition().getKey());
-        message.setText("Anomaly Result " + mappedMetricData.getAnomalyResult().toString());
-        emailSender.send(message);
+        try {
+            MimeMessage mimeMessage = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "utf-8");
+            mimeMessage.setContent(mailContentBuilder.build(mappedMetricData), "text/html");
+            helper.setTo(to);
+            helper.setSubject(String.format(EMAIL_SUB,
+                mappedMetricData.getMetricData().getMetricDefinition().getKey()));
+            helper.setFrom(from);
+            emailSender.send(mimeMessage);
+        } catch (Exception ex) {
+        log.error("Email failed to send", ex);
+    }
     }
 }

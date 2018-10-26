@@ -18,10 +18,13 @@ package com.expedia.alertmanager.web;
 import com.expedia.alertmanager.dao.SubscriptionRepository;
 import com.expedia.alertmanager.entity.Subscription;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -33,6 +36,11 @@ public class SubscriptionController {
     @Autowired
     private SubscriptionRepository subscriptionRepo;
 
+    @ResponseStatus(value=HttpStatus.NOT_FOUND)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public void notFound() {
+    }
+
     @RequestMapping(value = "/subscriptions", method = {RequestMethod.POST, RequestMethod.PUT})
     public List<Subscription> createSubscriptions(
         @RequestBody List<SubscriptionRequest> subscriptions) {
@@ -40,19 +48,26 @@ public class SubscriptionController {
         subscriptions.forEach(sr -> {
             Subscription subscription = new Subscription(sr.getMetricId(), sr.getDetectorId(), sr.getName(),
                 sr.getDescription(), sr.getType(),
-                sr.getEndpoint(), sr.getCreatedBy());
+                sr.getEndpoint(), sr.getOwner());
             subscriptionResult.add(subscriptionRepo.save(subscription));
         });
         return subscriptionResult;
     }
 
-    @RequestMapping(value = "/subscriptions/{detectorId}/{metricId}", method = RequestMethod.GET)
-    public List<Subscription> getSubscriptionsByDetectorIdAndMetricId(@PathVariable String detectorId, @PathVariable String metricId) {
-        return subscriptionRepo.findByDetectorIdAndMetricId(detectorId, metricId);
+    @RequestMapping(value = "/subscriptions", method = RequestMethod.GET)
+    public List<Subscription> getSubscriptions(@RequestParam(required = false) String detectorId,
+                                                                      @RequestParam(required = false) String metricId,
+                                                                      @RequestParam(required = false) String owner) {
+        if (detectorId != null && metricId != null) {
+            return subscriptionRepo.findByDetectorIdAndMetricId(detectorId, metricId);
+        }
+        else if (detectorId != null) {
+            return subscriptionRepo.findByDetectorId(detectorId);
+        }
+        else if (owner != null) {
+            return subscriptionRepo.findByOwner(owner);
+        }
+        throw new IllegalArgumentException("Invalid Input Params");
     }
 
-    @RequestMapping(value = "/subscriptions/{detectorId}", method = RequestMethod.GET)
-    public List<Subscription> getSubscriptionsByDetectorId(@PathVariable String detectorId) {
-        return subscriptionRepo.findByDetectorId(detectorId);
-    }
 }

@@ -60,7 +60,7 @@ public class SubscriptionControllerTests {
         subscriptionRequest.setDescription("description");
         subscriptionRequest.setType("EMAIL");
         subscriptionRequest.setEndpoint("email@email.com");
-        subscriptionRequest.setCreatedBy("user");
+        subscriptionRequest.setOwner("user");
         subscriptionRequestList.add(subscriptionRequest);
 
         String content = new ObjectMapper().writeValueAsString(subscriptionRequestList);
@@ -90,7 +90,7 @@ public class SubscriptionControllerTests {
                     "email@email.com", "user")));
 
         //verify
-        mvc.perform(get("/subscriptions/b0987951-5db1-451e-861a-a7a5ac3285df/1075bc5daeb15245a1933a0344c5a23c")
+        mvc.perform(get("/subscriptions?detectorId=b0987951-5db1-451e-861a-a7a5ac3285df&metricId=1075bc5daeb15245a1933a0344c5a23c")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.[0].metricId").value("1075bc5daeb15245a1933a0344c5a23c"));
@@ -111,10 +111,41 @@ public class SubscriptionControllerTests {
                     "email@email.com", "user")));
 
         //verify
-        mvc.perform(get("/subscriptions/b0987951-5db1-451e-861a-a7a5ac3285df")
+        mvc.perform(get("/subscriptions?detectorId=b0987951-5db1-451e-861a-a7a5ac3285df")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.[0].metricId").value("1075bc5daeb15245a1933a0344c5a23c"));
         verify(subscriptionRepo).findByDetectorId(any());
+    }
+
+    @Test
+    public void givenOwner_shouldReturnSubscriptions()
+        throws Exception {
+
+        //given owner
+        given(subscriptionRepo.findByOwner(
+            "user"))
+            .willReturn(
+                Arrays.asList(new Subscription("1075bc5daeb15245a1933a0344c5a23c",
+                    "b0987951-5db1-451e-861a-a7a5ac3285df", "Booking Alert",
+                    "Changed Trend", Subscription.EMAIL_TYPE,
+                    "email@email.com", "user")));
+
+        //verify
+        mvc.perform(get("/subscriptions?owner=user")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.[0].metricId").value("1075bc5daeb15245a1933a0344c5a23c"));
+        verify(subscriptionRepo).findByOwner(any());
+    }
+
+    @Test
+    public void apiInvocationWithWrongParamsShouldFail()
+        throws Exception {
+
+        //invoke with no parameter
+        mvc.perform(get("/subscriptions")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
     }
 }

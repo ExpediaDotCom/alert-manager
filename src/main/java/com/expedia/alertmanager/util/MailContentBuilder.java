@@ -15,6 +15,8 @@
  */
 package com.expedia.alertmanager.util;
 
+import com.expedia.alertmanager.temp.AnomalyResult;
+import com.expedia.alertmanager.temp.InvestigationResult;
 import com.expedia.alertmanager.temp.MappedMetricData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,13 +41,35 @@ public class MailContentBuilder {
         context.setVariable("metricValue", mappedMetricData.getMetricData().getValue());
         context.setVariable("detector", mappedMetricData.getDetectorType());
         context.setVariable("metadata", createMetaData(mappedMetricData));
+        context.setVariable("investigationResults",
+            createInvestigationResults(mappedMetricData.getAnomalyResult()));
         return templateEngine.process("emailTemplate", context);
+    }
+
+    //FIXME - temporary logic to derive investigation results
+    private Map<String, String> createInvestigationResults(AnomalyResult anomalyResult) {
+        Map<String, String> investigationResults = new HashMap<>();
+        if (anomalyResult != null && !anomalyResult.getInvestigationResults().isEmpty()) {
+            InvestigationResult investigationResult = anomalyResult.getInvestigationResults().get(0);
+            if (investigationResult.getDetails().get("playbookUrl") != null) {
+                investigationResults.put("playbookUrl",
+                    investigationResult.getDetails().get("playbookUrl").toString());
+            }
+            if (investigationResult.getDetails().get("description") != null) {
+                investigationResults.put("description",
+                    investigationResult.getDetails().get("description").toString());
+            }
+        }
+        return investigationResults;
     }
 
     private Map<String, String> createMetaData(MappedMetricData mappedMetricData) {
         Map<String, String> metadata = new HashMap<>(mappedMetricData.getMetricData().getMetricDefinition()
             .getTags().getKv());
+        //FIXME - adding/removing custom tags is temporary
         metadata.put("anomalyLevel", mappedMetricData.getAnomalyResult().getAnomalyLevel().name());
+        metadata.remove("org_id");
         return metadata;
     }
+
 }

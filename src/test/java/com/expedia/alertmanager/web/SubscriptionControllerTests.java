@@ -96,4 +96,25 @@ public class SubscriptionControllerTests {
             .andExpect(jsonPath("$.[0].metricId").value("1075bc5daeb15245a1933a0344c5a23c"));
         verify(subscriptionRepo).findByDetectorIdAndMetricId(any(), any());
     }
+
+    @Test
+    public void givenDetectorId_shouldReturnSubscriptions()
+        throws Exception {
+
+        //given detector id
+        given(subscriptionRepo.findByDetectorId(
+            "b0987951-5db1-451e-861a-a7a5ac3285df"))
+            .willReturn(
+                Arrays.asList(new Subscription("1075bc5daeb15245a1933a0344c5a23c",
+                    "b0987951-5db1-451e-861a-a7a5ac3285df", "Booking Alert",
+                    "Changed Trend", Subscription.EMAIL_TYPE,
+                    "email@email.com", "user")));
+
+        //verify
+        mvc.perform(get("/subscriptions/b0987951-5db1-451e-861a-a7a5ac3285df")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.[0].metricId").value("1075bc5daeb15245a1933a0344c5a23c"));
+        verify(subscriptionRepo).findByDetectorId(any());
+    }
 }

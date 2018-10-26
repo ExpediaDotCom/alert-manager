@@ -16,12 +16,13 @@
 package com.expedia.alertmanager.dao;
 
 import com.expedia.alertmanager.entity.Subscription;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
 public interface SubscriptionRepository extends CrudRepository<Subscription, Long> {
-    @Query("SELECT s FROM subscription s where s.detectorId = ?1 AND s.metricId = ?2")
+
     public List<Subscription> findByDetectorIdAndMetricId(String detectorId, String metricId);
+
+    public List<Subscription> findByDetectorId(String detectorId);
 }

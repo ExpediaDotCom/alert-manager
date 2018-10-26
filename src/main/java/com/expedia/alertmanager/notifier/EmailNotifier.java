@@ -15,6 +15,7 @@
  */
 package com.expedia.alertmanager.notifier;
 
+import com.expedia.alertmanager.entity.Subscription;
 import com.expedia.alertmanager.temp.MappedMetricData;
 import com.expedia.alertmanager.util.MailContentBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +28,13 @@ import javax.mail.internet.MimeMessage;
 public class EmailNotifier implements Notifier {
 
     private final JavaMailSender emailSender;
-    private final String to;
+    private final Subscription subscription;
     private final String from;
     private final MailContentBuilder mailContentBuilder;
 
-    public EmailNotifier(JavaMailSender emailSender, String to, String from, MailContentBuilder mailContentBuilder) {
+    public EmailNotifier(JavaMailSender emailSender, Subscription subscription, String from, MailContentBuilder mailContentBuilder) {
         this.emailSender = emailSender;
-        this.to = to;
+        this.subscription = subscription;
         this.from = from;
         this.mailContentBuilder = mailContentBuilder;
     }
@@ -44,9 +45,8 @@ public class EmailNotifier implements Notifier {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "utf-8");
             mimeMessage.setContent(mailContentBuilder.build(mappedMetricData), "text/html");
-            helper.setTo(to);
-            helper.setSubject(String.format(EMAIL_SUB,
-                mappedMetricData.getMetricData().getMetricDefinition().getKey()));
+            helper.setTo(subscription.getEndpoint().split(EMAIL_DELIMITER));
+            helper.setSubject(String.format(EMAIL_SUB, subscription.getName()));
             helper.setFrom(from);
             emailSender.send(mimeMessage);
         } catch (Exception ex) {

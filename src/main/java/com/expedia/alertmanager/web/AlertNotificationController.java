@@ -52,8 +52,7 @@ public class AlertNotificationController {
         String metricId = idFactory.getId(mappedMetricData.getMetricData().getMetricDefinition());
         //TODO - remove these, added temporarily
         log.info("Metric Id : {}", metricId);
-        List<Subscription> subscriptions
-            = subscriptionRepo.findByDetectorIdAndMetricId(detectorId, metricId);
+        List<Subscription> subscriptions = subscriptionRepo.findByDetectorId(detectorId);
         log.info("Subscription Details : {}", Arrays.toString(subscriptions.toArray()));
         subscriptions.forEach(subscription -> {
             notifierFactory.createNotifier(subscription).execute(mappedMetricData);

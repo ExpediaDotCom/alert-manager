@@ -99,7 +99,7 @@ public class AlertNotificationControllerTests {
             "Changed Trend", Subscription.EMAIL_TYPE,
             "email@email.com", "user"));
         given(idFactory.getId(metricDefinition)).willReturn(metricId);
-        given(subscriptionRepo.findByDetectorIdAndMetricId(detectorId.toString(), metricId))
+        given(subscriptionRepo.findByDetectorId(detectorId.toString()))
             .willReturn(subscriptions);
         Notifier mockNotifier = mock(Notifier.class);
         given(notifierFactory.createNotifier(any())).willReturn(mockNotifier);

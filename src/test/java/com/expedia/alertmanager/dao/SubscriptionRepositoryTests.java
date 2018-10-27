@@ -39,8 +39,9 @@ public class SubscriptionRepositoryTests {
     public void whenFindByDetectorIdAndMetricId_thenReturnSubscriptions() {
 
         // given
-        Subscription subscription = new Subscription("metricId", "detectorId", "Booking Alert",
-            "change in trend", Subscription.EMAIL_TYPE, "email@email.com", "user");
+        Subscription subscription = Subscription.builder().metricId("metricId").detectorId("detectorId")
+            .name("Booking Alert").description("change in trend").type(Subscription.TYPE.EMAIL.name())
+            .endpoint("email@email.com").owner("user").build();
         entityManager.persist(subscription);
         entityManager.flush();
 
@@ -60,8 +61,9 @@ public class SubscriptionRepositoryTests {
     public void whenFindByDetectorId_thenReturnSubscriptions() {
 
         // given
-        Subscription subscription = new Subscription(null, "detectorId", "Booking Alert",
-            "change in trend", Subscription.EMAIL_TYPE, "email@email.com", "user");
+        Subscription subscription = Subscription.builder().detectorId("detectorId")
+            .name("Booking Alert").description("change in trend").type(Subscription.TYPE.EMAIL.name())
+            .endpoint("email@email.com").owner("user").build();
         entityManager.persist(subscription);
         entityManager.flush();
 
@@ -81,8 +83,9 @@ public class SubscriptionRepositoryTests {
     public void whenFindByOwner_thenReturnSubscriptions() {
 
         // given
-        Subscription subscription = new Subscription(null, "detectorId", "Booking Alert",
-            "change in trend", Subscription.EMAIL_TYPE, "email@email.com", "user");
+        Subscription subscription = Subscription.builder().detectorId("detectorId")
+                .name("Booking Alert").description("change in trend").type(Subscription.TYPE.EMAIL.name())
+                .endpoint("email@email.com").owner("user").build();
         entityManager.persist(subscription);
         entityManager.flush();
 

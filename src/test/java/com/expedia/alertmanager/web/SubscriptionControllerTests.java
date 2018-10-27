@@ -35,6 +35,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -65,14 +66,43 @@ public class SubscriptionControllerTests {
 
         String content = new ObjectMapper().writeValueAsString(subscriptionRequestList);
         given(subscriptionRepo.save(any(Subscription.class)))
-            .willReturn(new Subscription());
+            .willReturn(Subscription.builder().build());
 
         //verify
         mvc.perform(post("/subscriptions")
             .content(content)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-        verify(subscriptionRepo).save(any(Subscription.class));
+        verify(subscriptionRepo).saveAll(any(Iterable.class));
+    }
+
+    @Test
+    public void givenAnUpdateSubscriptionRequest_shouldPersistSubscriptions()
+        throws Exception {
+
+        //given an update subscription request
+        ArrayList<UpdateSubscriptionRequest> updateSubscriptionRequests = new ArrayList<>();
+        UpdateSubscriptionRequest updateSubscriptionRequest = new UpdateSubscriptionRequest();
+        updateSubscriptionRequest.setId(10l);
+        updateSubscriptionRequest.setMetricId("metricId");
+        updateSubscriptionRequest.setDetectorId("detectorId");
+        updateSubscriptionRequest.setName("name");
+        updateSubscriptionRequest.setDescription("description");
+        updateSubscriptionRequest.setType("EMAIL");
+        updateSubscriptionRequest.setEndpoint("email@email.com");
+        updateSubscriptionRequest.setOwner("user");
+        updateSubscriptionRequests.add(updateSubscriptionRequest);
+
+        String content = new ObjectMapper().writeValueAsString(updateSubscriptionRequests);
+        given(subscriptionRepo.save(any(Subscription.class)))
+            .willReturn(Subscription.builder().build());
+
+        //verify
+        mvc.perform(put("/subscriptions")
+            .content(content)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(subscriptionRepo).saveAll(any(Iterable.class));
     }
 
     @Test
@@ -84,10 +114,10 @@ public class SubscriptionControllerTests {
             "b0987951-5db1-451e-861a-a7a5ac3285df",
             "1075bc5daeb15245a1933a0344c5a23c"))
             .willReturn(
-                Arrays.asList(new Subscription("1075bc5daeb15245a1933a0344c5a23c",
-                    "b0987951-5db1-451e-861a-a7a5ac3285df", "Booking Alert",
-                    "Changed Trend", Subscription.EMAIL_TYPE,
-                    "email@email.com", "user")));
+                Arrays.asList(Subscription.builder().metricId("1075bc5daeb15245a1933a0344c5a23c")
+                    .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
+                    .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
+                    .endpoint("email@email.com").owner("user").build()));
 
         //verify
         mvc.perform(get("/subscriptions?detectorId=b0987951-5db1-451e-861a-a7a5ac3285df&metricId=1075bc5daeb15245a1933a0344c5a23c")
@@ -105,10 +135,10 @@ public class SubscriptionControllerTests {
         given(subscriptionRepo.findByDetectorId(
             "b0987951-5db1-451e-861a-a7a5ac3285df"))
             .willReturn(
-                Arrays.asList(new Subscription("1075bc5daeb15245a1933a0344c5a23c",
-                    "b0987951-5db1-451e-861a-a7a5ac3285df", "Booking Alert",
-                    "Changed Trend", Subscription.EMAIL_TYPE,
-                    "email@email.com", "user")));
+                Arrays.asList(Subscription.builder().metricId("1075bc5daeb15245a1933a0344c5a23c")
+                    .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
+                    .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
+                    .endpoint("email@email.com").owner("user").build()));
 
         //verify
         mvc.perform(get("/subscriptions?detectorId=b0987951-5db1-451e-861a-a7a5ac3285df")
@@ -126,10 +156,10 @@ public class SubscriptionControllerTests {
         given(subscriptionRepo.findByOwner(
             "user"))
             .willReturn(
-                Arrays.asList(new Subscription("1075bc5daeb15245a1933a0344c5a23c",
-                    "b0987951-5db1-451e-861a-a7a5ac3285df", "Booking Alert",
-                    "Changed Trend", Subscription.EMAIL_TYPE,
-                    "email@email.com", "user")));
+                Arrays.asList(Subscription.builder().metricId("1075bc5daeb15245a1933a0344c5a23c")
+                    .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
+                    .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
+                    .endpoint("email@email.com").owner("user").build()));
 
         //verify
         mvc.perform(get("/subscriptions?owner=user")

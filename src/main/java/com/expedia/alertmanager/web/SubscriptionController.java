@@ -19,7 +19,9 @@ import com.expedia.alertmanager.dao.SubscriptionRepository;
 import com.expedia.alertmanager.entity.Subscription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,7 +30,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class SubscriptionController {
@@ -38,20 +42,63 @@ public class SubscriptionController {
 
     @ResponseStatus(value=HttpStatus.NOT_FOUND)
     @ExceptionHandler(IllegalArgumentException.class)
-    public void notFound() {
+    public String notFound(Exception e) {
+        return e.getMessage();
     }
 
-    @RequestMapping(value = "/subscriptions", method = {RequestMethod.POST, RequestMethod.PUT})
-    public List<Subscription> createSubscriptions(
+    @RequestMapping(value = "/subscriptions", method = {RequestMethod.POST})
+    public Iterable<Subscription> createSubscriptions(
         @RequestBody List<SubscriptionRequest> subscriptions) {
-        List<Subscription> subscriptionResult =  new ArrayList<>();
-        subscriptions.forEach(sr -> {
-            Subscription subscription = new Subscription(sr.getMetricId(), sr.getDetectorId(), sr.getName(),
-                sr.getDescription(), sr.getType(),
-                sr.getEndpoint(), sr.getOwner());
-            subscriptionResult.add(subscriptionRepo.save(subscription));
+        Assert.notEmpty(subscriptions, "Input list can't be empty");
+        List<Subscription> subscriptionInput =  new ArrayList<>();
+        subscriptions.stream().map(sr -> {
+            validateSubscriptionRequest(sr);
+            return builder(sr).build();
+        }).collect(Collectors.toList());
+        return subscriptionRepo.saveAll(subscriptionInput);
+    }
+
+    private Subscription.SubscriptionBuilder builder(SubscriptionRequest sr) {
+        return Subscription.builder()
+            .metricId(sr.getMetricId())
+            .detectorId(sr.getDetectorId())
+            .name(sr.getName())
+            .description(sr.getDescription())
+            .type(sr.getType())
+            .endpoint(sr.getEndpoint())
+            .owner(sr.getOwner());
+    }
+
+    private void validateSubscriptionRequest(SubscriptionRequest sr) {
+        Assert.noNullElements(new String[] {sr.getName(), sr.getDetectorId(), sr.getEndpoint(), sr.getType()},
+            "name, detectorId, endpoint and type attributes can't be null");
+        Assert.isTrue(Arrays.asList(Subscription.TYPE.values()).stream().anyMatch(type -> type.name().equals(sr.getType())),
+            "type should be one of " + Arrays.asList(Subscription.TYPE.values()));
+    }
+
+    @RequestMapping(value = "/subscriptions", method = {RequestMethod.PUT})
+    public Iterable<Subscription> updateSubscriptions(
+        @RequestBody List<UpdateSubscriptionRequest> subscriptions) {
+        Assert.notEmpty(subscriptions, "Input list can't be empty");
+        List<Subscription> subscriptionInput = subscriptions.stream()
+            .map(sur -> {
+                validateUpdateSubscriptionRequest(sur);
+                return builder(sur).id(sur.getId()).build();
+        }).collect(Collectors.toList());
+        return subscriptionRepo.saveAll(subscriptionInput);
+    }
+
+    private void validateUpdateSubscriptionRequest(UpdateSubscriptionRequest sur) {
+        Assert.notNull(sur.getId(), "id can't be null");
+        validateSubscriptionRequest(sur);
+    }
+
+    @RequestMapping(value = "/subscriptions/{id}", method = {RequestMethod.DELETE})
+    public void deleteSubscription(@PathVariable long id) {
+        Assert.notNull(id, "id can't be null");
+        subscriptionRepo.findById(id).ifPresent(sub -> {
+            subscriptionRepo.delete(sub);
         });
-        return subscriptionResult;
     }
 
     @RequestMapping(value = "/subscriptions", method = RequestMethod.GET)

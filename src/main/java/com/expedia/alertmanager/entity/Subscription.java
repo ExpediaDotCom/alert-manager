@@ -15,6 +15,8 @@
  */
 package com.expedia.alertmanager.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -28,13 +30,13 @@ import javax.persistence.Id;
 import java.sql.Timestamp;
 
 @Data
-@NoArgsConstructor
 @ToString
 @EqualsAndHashCode
 @Entity(name = "subscription")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Subscription {
-    public static final String EMAIL_TYPE = "EMAIL";
-    public static final String PD_TYPE = "PD";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,14 +65,7 @@ public class Subscription {
     @Column(name = "date_created")
     private Timestamp timestamp;
 
-    public Subscription(String metricId, String detectorId, String name, String description,
-                        String type, String endpoint, String owner) {
-        this.metricId = metricId;
-        this.detectorId = detectorId;
-        this.name = name;
-        this.description = description;
-        this.type = type;
-        this.endpoint = endpoint;
-        this.owner = owner;
+    public static enum TYPE {
+        EMAIL, PD;
     }
 }

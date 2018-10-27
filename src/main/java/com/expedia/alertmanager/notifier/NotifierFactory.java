@@ -38,15 +38,15 @@ public class NotifierFactory {
     private boolean useAwsSes;
 
     public Notifier createNotifier(Subscription subscription) {
-        switch (subscription.getType()) {
-            case Subscription.EMAIL_TYPE:
+        switch (Subscription.TYPE.valueOf(subscription.getType())) {
+            case EMAIL:
                 if (useAwsSes) {
                     return new AwsSesNotifier(subscription, fromEmail, mailContentBuilder);
                 }
                 else {
                     return new EmailNotifier(emailSender, subscription, fromEmail, mailContentBuilder);
                 }
-            case Subscription.PD_TYPE:
+            case PD:
                 return new PagerDutyNotifier("", subscription.getEndpoint());
             default:
                 throw new RuntimeException("No Notifier Found for the subscription type");

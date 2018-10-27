@@ -94,10 +94,10 @@ public class AlertNotificationControllerTests {
         //when email subscription
         List<Subscription> subscriptions = new ArrayList<>();
         String metricId = "1.1075bc5daeb15245a1933a0344c5a23c";
-        subscriptions.add(new Subscription("1075bc5daeb15245a1933a0344c5a23c",
-            "b0987951-5db1-451e-861a-a7a5ac3285df", "Booking Alert",
-            "Changed Trend", Subscription.EMAIL_TYPE,
-            "email@email.com", "user"));
+        subscriptions.add(Subscription.builder().metricId("1075bc5daeb15245a1933a0344c5a23c")
+            .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
+            .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
+            .endpoint("email@email.com").owner("user").build());
         given(idFactory.getId(metricDefinition)).willReturn(metricId);
         given(subscriptionRepo.findByDetectorId(detectorId.toString()))
             .willReturn(subscriptions);

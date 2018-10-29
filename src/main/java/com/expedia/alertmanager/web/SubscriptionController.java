@@ -50,8 +50,7 @@ public class SubscriptionController {
     public Iterable<Subscription> createSubscriptions(
         @RequestBody List<SubscriptionRequest> subscriptions) {
         Assert.notEmpty(subscriptions, "Input list can't be empty");
-        List<Subscription> subscriptionInput =  new ArrayList<>();
-        subscriptions.stream().map(sr -> {
+        List<Subscription> subscriptionInput = subscriptions.stream().map(sr -> {
             validateSubscriptionRequest(sr);
             return builder(sr).build();
         }).collect(Collectors.toList());

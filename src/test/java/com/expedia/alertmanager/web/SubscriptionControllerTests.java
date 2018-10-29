@@ -20,6 +20,7 @@ import com.expedia.alertmanager.entity.Subscription;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -30,6 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -55,25 +57,31 @@ public class SubscriptionControllerTests {
         //given a subscription request
         ArrayList<SubscriptionRequest> subscriptionRequestList = new ArrayList<>();
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
-        subscriptionRequest.setMetricId("metricId");
-        subscriptionRequest.setDetectorId("detectorId");
-        subscriptionRequest.setName("name");
-        subscriptionRequest.setDescription("description");
+        subscriptionRequest.setMetricId("1075bc5daeb15245a1933a0344c5a23c");
+        subscriptionRequest.setDetectorId("b0987951-5db1-451e-861a-a7a5ac3285df");
+        subscriptionRequest.setName("Booking Alert");
+        subscriptionRequest.setDescription("Changed Trend");
         subscriptionRequest.setType("EMAIL");
         subscriptionRequest.setEndpoint("email@email.com");
         subscriptionRequest.setOwner("user");
         subscriptionRequestList.add(subscriptionRequest);
 
         String content = new ObjectMapper().writeValueAsString(subscriptionRequestList);
-        given(subscriptionRepo.save(any(Subscription.class)))
-            .willReturn(Subscription.builder().build());
+        given(subscriptionRepo.saveAll(any(Iterable.class)))
+            .willReturn(Arrays.asList(Subscription.builder().metricId("1075bc5daeb15245a1933a0344c5a23c")
+                .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
+                .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
+                .endpoint("email@email.com").owner("user").build()));
 
         //verify
         mvc.perform(post("/subscriptions")
             .content(content)
             .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-        verify(subscriptionRepo).saveAll(any(Iterable.class));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.[0].metricId").value("1075bc5daeb15245a1933a0344c5a23c"));
+        ArgumentCaptor<Iterable> captur = ArgumentCaptor.forClass(Iterable.class);
+        verify(subscriptionRepo).saveAll(captur.capture());
+        assertEquals(captur.getAllValues().size(), 1);
     }
 
     @Test
@@ -94,15 +102,22 @@ public class SubscriptionControllerTests {
         updateSubscriptionRequests.add(updateSubscriptionRequest);
 
         String content = new ObjectMapper().writeValueAsString(updateSubscriptionRequests);
-        given(subscriptionRepo.save(any(Subscription.class)))
-            .willReturn(Subscription.builder().build());
+        given(subscriptionRepo.saveAll(any(Iterable.class)))
+            .willReturn(Arrays.asList(Subscription.builder().id(10l)
+                .metricId("1075bc5daeb15245a1933a0344c5a23c")
+                .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
+                .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
+                .endpoint("email@email.com").owner("user").build()));
 
         //verify
         mvc.perform(put("/subscriptions")
             .content(content)
             .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-        verify(subscriptionRepo).saveAll(any(Iterable.class));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.[0].metricId").value("1075bc5daeb15245a1933a0344c5a23c"));
+        ArgumentCaptor<Iterable> captur = ArgumentCaptor.forClass(Iterable.class);
+        verify(subscriptionRepo).saveAll(captur.capture());
+        assertEquals(captur.getAllValues().size(), 1);
     }
 
     @Test

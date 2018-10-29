@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -53,8 +54,11 @@ public class AlertNotificationController {
         //TODO - remove these, added temporarily
         log.info("Metric Id : {}", metricId);
         List<Subscription> subscriptions = subscriptionRepo.findByDetectorId(detectorId);
-        log.info("Subscription Details : {}", Arrays.toString(subscriptions.toArray()));
-        subscriptions.forEach(subscription -> {
+        List<Subscription> matchedSubscriptions = subscriptions.stream()
+            .filter(sub -> sub.getMetricId() == null || metricId.equals(sub.getMetricId()))
+            .collect(Collectors.toList());
+        log.info("Subscription Details : {}", Arrays.toString(matchedSubscriptions.toArray()));
+        matchedSubscriptions.forEach(subscription -> {
             notifierFactory.createNotifier(subscription).execute(mappedMetricData);
         });
         return new ResponseEntity(HttpStatus.OK);

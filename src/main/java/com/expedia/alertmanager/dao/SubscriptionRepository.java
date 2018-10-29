@@ -24,6 +24,8 @@ public interface SubscriptionRepository extends CrudRepository<Subscription, Lon
 
     public List<Subscription> findByDetectorIdAndMetricId(String detectorId, String metricId);
 
+    public List<Subscription> findByDetectorIdAndOwner(String detectorId, String owner);
+
     public List<Subscription> findByDetectorId(String detectorId);
 
     public List<Subscription> findByOwner(String owner);

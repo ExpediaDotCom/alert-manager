@@ -107,12 +107,16 @@ public class SubscriptionController {
         if (detectorId != null && metricId != null) {
             return subscriptionRepo.findByDetectorIdAndMetricId(detectorId, metricId);
         }
+        else if (detectorId != null && owner != null) {
+            return subscriptionRepo.findByDetectorIdAndOwner(detectorId, owner);
+        }
         else if (detectorId != null) {
             return subscriptionRepo.findByDetectorId(detectorId);
         }
         else if (owner != null) {
             return subscriptionRepo.findByOwner(owner);
         }
+
         throw new IllegalArgumentException("Invalid Input Params");
     }
 

@@ -143,6 +143,28 @@ public class SubscriptionControllerTests {
     }
 
     @Test
+    public void givenAMetricIdAndOwner_shouldReturnSubscriptions()
+        throws Exception {
+
+        //given detector id and owner
+        given(subscriptionRepo.findByDetectorIdAndOwner(
+            "b0987951-5db1-451e-861a-a7a5ac3285df",
+            "user"))
+            .willReturn(
+                Arrays.asList(Subscription.builder().metricId("1075bc5daeb15245a1933a0344c5a23c")
+                    .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
+                    .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
+                    .endpoint("email@email.com").owner("user").build()));
+
+        //verify
+        mvc.perform(get("/subscriptions?detectorId=b0987951-5db1-451e-861a-a7a5ac3285df&owner=user")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.[0].metricId").value("1075bc5daeb15245a1933a0344c5a23c"));
+        verify(subscriptionRepo).findByDetectorIdAndOwner(any(), any());
+    }
+
+    @Test
     public void givenDetectorId_shouldReturnSubscriptions()
         throws Exception {
 

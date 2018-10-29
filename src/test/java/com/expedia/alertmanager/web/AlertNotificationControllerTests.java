@@ -47,6 +47,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -94,10 +95,22 @@ public class AlertNotificationControllerTests {
         //when email subscription
         List<Subscription> subscriptions = new ArrayList<>();
         String metricId = "1.1075bc5daeb15245a1933a0344c5a23c";
+        //having both metricId and detectorId but metricId doesn't match
         subscriptions.add(Subscription.builder().metricId("1075bc5daeb15245a1933a0344c5a23c")
             .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
             .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
             .endpoint("email@email.com").owner("user").build());
+        //having matching metricId and detectorId
+        subscriptions.add(Subscription.builder().metricId("1.1075bc5daeb15245a1933a0344c5a23c")
+            .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
+            .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
+            .endpoint("email@email.com").owner("user").build());
+        //having only matching detectorId
+        subscriptions.add(Subscription.builder()
+            .detectorId("b0987951-5db1-451e-861a-a7a5ac3285df").name("Booking Alert")
+            .description("Changed Trend").type(Subscription.TYPE.EMAIL.name())
+            .endpoint("email@email.com").owner("user").build());
+
         given(idFactory.getId(metricDefinition)).willReturn(metricId);
         given(subscriptionRepo.findByDetectorId(detectorId.toString()))
             .willReturn(subscriptions);
@@ -109,6 +122,6 @@ public class AlertNotificationControllerTests {
             .content(content)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-        verify(mockNotifier).execute(any());
+        verify(mockNotifier, times(2)).execute(any());
     }
 }

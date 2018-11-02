@@ -1,4 +1,8 @@
 /target/
+api/target/
+commons/target/
+deprecated-alertmanager/target/
+logs/
 .mvn/wrapper/maven-wrapper.jar
 .DS_Store
 

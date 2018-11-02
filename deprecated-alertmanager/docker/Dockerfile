@@ -21,7 +21,7 @@ ENV JMXTRANS_AGENT jmxtrans-agent-1.2.6
 
 RUN mkdir -p ${APP_HOME}
 
-COPY target/alert-manager-1.0.0-SNAPSHOT.jar ${APP_HOME}/alert-manager.jar
+COPY target/alert-manager-deprecated-1.0.0-SNAPSHOT.jar ${APP_HOME}/alert-manager-deprecated.jar
 COPY docker/start-app.sh ${APP_HOME}/
 COPY docker/jmxtrans-agent.xml ${APP_HOME}/
 

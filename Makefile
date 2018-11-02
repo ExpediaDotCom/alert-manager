@@ -13,5 +13,5 @@ all: clean build
 
 # build all and release
 release: all
-	./build.sh -b
-	./build.sh --release
+	cd api && $(MAKE) release && cd ..
+	cd deprecated-alertmanager && $(MAKE) release && cd ..

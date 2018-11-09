@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.expedia.alertmanager.model;
+package com.expedia.alertmanager.api.model;
 
-public enum Operator {
-    AND, OR
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class Query {
+  private BoolCondition bool;
 }

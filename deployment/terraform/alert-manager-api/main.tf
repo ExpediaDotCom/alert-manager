@@ -37,6 +37,10 @@ data "template_file" "deployment_yaml" {
 
 data "template_file" "config_data" {
   template = "${file("${local.application_yaml_file_path}")}"
+
+  vars {
+    es_urls = "${var.es_urls}"
+  }
 }
 
 resource "kubernetes_config_map" "haystack-config" {

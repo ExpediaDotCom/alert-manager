@@ -13,8 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.expedia.alertmanager.model;
+package com.expedia.alertmanager.api.model;
 
-public enum Operator {
-    AND, OR
+import com.expedia.alertmanager.model.Dispatcher;
+import com.expedia.alertmanager.model.User;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+public class SubscriptionEntity {
+  private User user;
+  private List<Dispatcher> dispatchers;
+  private Query query;
 }

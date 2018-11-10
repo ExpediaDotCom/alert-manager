@@ -1,78 +1,95 @@
+/*
+ * Copyright 2018 Expedia Group, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.expedia.alertmanager.api.web;
 
-import com.expedia.alertmanager.model.SubscriptionResponse;
+import com.expedia.alertmanager.api.dao.SubscriptionStore;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
-import com.expedia.alertmanager.model.Dispatcher;
-import com.expedia.alertmanager.model.ExpressionTree;
+import com.expedia.alertmanager.model.SearchSubscriptionRequest;
+import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.model.UpdateSubscriptionRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 public class SubscriptionController {
 
-    @RequestMapping(value = "/api/subscriptions", method = RequestMethod.POST)
-    public List<SubscriptionResponse> createSubscriptions(@RequestBody List<CreateSubscriptionRequest> createSubRqs) {
+    @Autowired
+    private SubscriptionStore subscriptionStore;
+
+    @Autowired
+    private RequestValidator requestValidator;
+
+    @RequestMapping(value = "/subscriptions", method = RequestMethod.POST)
+    public List<String> createSubscriptions(@RequestBody List<CreateSubscriptionRequest> createSubRqs) {
         Assert.notEmpty(createSubRqs, "CreateSubscriptionRequests should not be empty");
         createSubRqs.forEach(createSubRq -> {
-            validateExpression(createSubRq.getExpression());
-            validateDispatcher(createSubRq.getDispatchers());
-            validateOwner(createSubRq);
+            requestValidator.validateExpression(createSubRq.getExpression());
+            requestValidator.validateDispatcher(createSubRq.getDispatchers());
+            requestValidator.validateUser(createSubRq.getUser());
         });
 
-        //TODO - Store subscriptions
-
-        return null;
+        return subscriptionStore.createSubscriptions(createSubRqs);
     }
 
-    private void validateOwner(CreateSubscriptionRequest createSubRq) {
-        Assert.notNull(createSubRq.getOwner(), "subscription owner can't null");
+    @RequestMapping(value = "/subscriptions/search", method = RequestMethod.POST)
+    public List<SubscriptionResponse> searchSubscriptions(
+        @RequestBody SearchSubscriptionRequest searchSubscriptionRequest) {
+        Assert.isTrue(!StringUtils.isEmpty(searchSubscriptionRequest.getUserId())
+                || !ObjectUtils.isEmpty(searchSubscriptionRequest.getLabels()),
+            "user id or labels needs to be present");
+        Assert.isTrue(!(!StringUtils.isEmpty(searchSubscriptionRequest.getUserId())
+                && !ObjectUtils.isEmpty(searchSubscriptionRequest.getLabels())),
+            "search by both user id and labels not supported");
+
+        return subscriptionStore.searchSubscriptions(searchSubscriptionRequest.getUserId(),
+            searchSubscriptionRequest.getLabels());
     }
 
-    private void validateDispatcher(List<Dispatcher> dispatchers) {
-        Assert.notEmpty(dispatchers, "subscription dispatchers can't empty");
+    @RequestMapping(value = "/subscriptions/{id}", method = RequestMethod.GET)
+    public SubscriptionResponse getSubscription(@PathVariable String id) {
+        return subscriptionStore.getSubscription(id);
     }
 
-    private void validateExpression(ExpressionTree expression) {
-        Assert.notNull(expression, "subscription expression can't null");
-    }
-
-    @RequestMapping(value = "/api/subscriptions", method = RequestMethod.GET)
-    public List<SubscriptionResponse> getSubscription(@RequestParam(required = false) String owner,
-                                                      @RequestParam(required = false) Map<String, String> labels) {
-        //TODO -  Fetch subscriptions
-
-        return null;
-    }
-
-    @RequestMapping(value = "/api/subscriptions", method = RequestMethod.PUT)
-    public List<SubscriptionResponse> updateSubscription(@RequestBody List<UpdateSubscriptionRequest> updateSubRqs) {
+    @RequestMapping(value = "/subscriptions", method = RequestMethod.PUT)
+    public ResponseEntity updateSubscriptions(@RequestBody List<UpdateSubscriptionRequest> updateSubRqs) {
         Assert.notEmpty(updateSubRqs, "UpdateSubscriptionRequests should not be empty");
         updateSubRqs.forEach(updateSubRq -> {
-            validateExpression(updateSubRq.getExpression());
-            validateDispatcher(updateSubRq.getDispatchers());
+            requestValidator.validateExpression(updateSubRq.getExpression());
+            requestValidator.validateDispatcher(updateSubRq.getDispatchers());
         });
 
-        //TODO - Update subscriptions
-
-        return null;
+        subscriptionStore.updateSubscriptions(updateSubRqs);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/api/subscriptions", method = RequestMethod.DELETE)
-    public ResponseEntity deleteSubscription(@RequestParam String id) throws ExecutionException, InterruptedException {
+    @RequestMapping(value = "/subscriptions/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity deleteSubscription(@PathVariable String id) {
         Assert.notNull(id, "id can't be null");
-
-        //TODO - Delete subscription
-
-        return null;
+        subscriptionStore.deleteSubscription(id);
+        return new ResponseEntity(HttpStatus.OK);
     }
 }

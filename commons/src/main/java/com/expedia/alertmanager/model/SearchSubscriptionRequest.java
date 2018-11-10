@@ -15,6 +15,12 @@
  */
 package com.expedia.alertmanager.model;
 
-public enum Operator {
-    AND, OR
+import lombok.Data;
+
+import java.util.Map;
+
+@Data
+public class SearchSubscriptionRequest {
+    private String userId;
+    private Map<String, String> labels;
 }

@@ -1,0 +1,16 @@
+kafka:
+  consumer:
+    bootstrap.servers: localhost:9092
+    group.id: am_notifier
+    auto.offset.reset: earliest
+    session.timeout.ms: 30000
+    heartbeat.interval.ms: 10000
+    request.timeout.ms: 40000
+  topic: alerts
+
+subscription-search:
+  url: http://localhost:8080/subscriptions/search
+
+mail:
+  from: from@email.com
+

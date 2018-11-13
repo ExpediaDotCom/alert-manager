@@ -1,0 +1,15 @@
+kafka:
+  consumer:
+    bootstrap.servers: ${kafka_endpoint}
+    group.id: am_notifier
+    auto.offset.reset: earliest
+    session.timeout.ms: 30000
+    heartbeat.interval.ms: 10000
+    request.timeout.ms: 40000
+  topic: alerts
+
+subscription-search:
+  url: ${subscription_search_url}
+
+mail:
+  from: ${mail_from}

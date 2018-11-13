@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.expedia.alertmanager.model;
+package com.expedia.alertmanager.notifier.web;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
-@Data
-@ToString
-@EqualsAndHashCode
-public class ExpressionTree {
-    private Operator operator;
-    List<Operand> operands;
+@RestController
+public class HealthController {
+    @GetMapping(value = "/isActive")
+    public Boolean isActive() {
+        return true;
+    }
 }

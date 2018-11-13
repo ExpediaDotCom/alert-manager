@@ -16,14 +16,21 @@
 package com.expedia.alertmanager.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
+@ToString
+@EqualsAndHashCode
 public class Alert {
     private String name;
     private Map<String, String> labels;
     private Map<String, String> annotations;
-    private LocalDateTime dateTime;
+    private String observedValue;
+    private String expectedValue;
+    private long startTime;
+    private String generatorURL;
 }

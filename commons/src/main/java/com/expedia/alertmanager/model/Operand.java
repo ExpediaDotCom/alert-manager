@@ -16,8 +16,12 @@
 package com.expedia.alertmanager.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
+@ToString
+@EqualsAndHashCode
 public class Operand {
     private Field field;
     private ExpressionTree expression;

@@ -15,3 +15,4 @@ all: clean build
 release: all
 	cd api && $(MAKE) release && cd ..
 	cd deprecated-alertmanager && $(MAKE) release && cd ..
+	cd notifier && $(MAKE) release && cd ..

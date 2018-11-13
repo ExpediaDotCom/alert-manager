@@ -1,6 +1,7 @@
 /target/
 api/target/
 commons/target/
+notifier/target/
 deprecated-alertmanager/target/
 logs/
 .mvn/wrapper/maven-wrapper.jar

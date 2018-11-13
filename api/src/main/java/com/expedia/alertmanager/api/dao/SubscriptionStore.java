@@ -202,7 +202,11 @@ public class SubscriptionStore {
                         XContentType.JSON);
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
                 searchSourceBuilder.query(percolateQuery);
-                return getSubscriptionResponses(client, searchSourceBuilder);
+                long startTime = System.currentTimeMillis();
+                List<SubscriptionResponse> responses = getSubscriptionResponses(client, searchSourceBuilder);
+                long stopTime = System.currentTimeMillis();
+                log.info("Search elapsed time:{}", stopTime - startTime);
+                return responses;
             }
         } catch (IOException e) {
             log.error("Search subscriptions failed", e);

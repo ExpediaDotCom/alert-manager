@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.expedia.alertmanager.model;
+package com.expedia.alertmanager.notifier;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.List;
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class NotifierApplicationTests {
 
-@Data
-@ToString
-@EqualsAndHashCode
-public class ExpressionTree {
-    private Operator operator;
-    List<Operand> operands;
+    @Test
+    public void contextLoads() {
+    }
+
 }

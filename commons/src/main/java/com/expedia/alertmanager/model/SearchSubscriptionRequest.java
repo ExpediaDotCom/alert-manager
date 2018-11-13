@@ -16,10 +16,14 @@
 package com.expedia.alertmanager.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.Map;
 
 @Data
+@ToString
+@EqualsAndHashCode
 public class SearchSubscriptionRequest {
     private String userId;
     private Map<String, String> labels;

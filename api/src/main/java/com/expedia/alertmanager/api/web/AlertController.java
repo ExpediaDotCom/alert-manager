@@ -15,7 +15,9 @@
  */
 package com.expedia.alertmanager.api.web;
 
+import com.expedia.alertmanager.api.dao.AlertStore;
 import com.expedia.alertmanager.model.Alert;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,10 +30,16 @@ import java.util.List;
 @RestController
 public class AlertController {
 
+    private final AlertStore alertStore;
+
+    @Autowired
+    public AlertController(AlertStore alertStore) {
+        this.alertStore = alertStore;
+    }
+
     @RequestMapping(value = "/alerts", method = RequestMethod.POST)
     public ResponseEntity receiveAlerts(@RequestBody List<Alert> alerts) {
-
-        //TODO - store alerts in kafka
+        alertStore.saveAlerts(alerts);
         return new ResponseEntity(HttpStatus.OK);
     }
 

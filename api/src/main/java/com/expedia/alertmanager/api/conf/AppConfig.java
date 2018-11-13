@@ -15,10 +15,14 @@
  */
 package com.expedia.alertmanager.api.conf;
 
+import com.expedia.alertmanager.model.Alert;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.config.HttpClientConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -47,5 +51,15 @@ public class AppConfig {
 
         factory.setHttpClientConfig(builder.build());
         return factory;
+    }
+
+    @Bean
+    public ProducerFactory<String, Alert> producerFactory(KafkaConfig kafkaConfig) {
+        return new DefaultKafkaProducerFactory(kafkaConfig.getKafkaProducerConfig());
+    }
+
+    @Bean
+    public KafkaTemplate<String, Alert> kafkaTemplate(KafkaConfig kafkaConfig) {
+        return new KafkaTemplate<>(producerFactory(kafkaConfig));
     }
 }

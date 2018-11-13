@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.expedia.alertmanager.model;
+package com.expedia.alertmanager.notifier.action;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import com.expedia.alertmanager.model.Alert;
 
-import java.util.List;
+public interface Notifier {
 
-@Data
-@ToString
-@EqualsAndHashCode
-public class ExpressionTree {
-    private Operator operator;
-    List<Operand> operands;
+    void notify(Alert alert);
 }

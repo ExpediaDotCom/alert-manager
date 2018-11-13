@@ -31,21 +31,32 @@
         <module>api</module>
         <module>deprecated-alertmanager</module>
         <module>commons</module>
+        <module>notifier</module>
     </modules>
 
     <properties>
-        <spring.boot.version>2.0.5.RELEASE</spring.boot.version>
+        <spring.boot.version>2.1.0.RELEASE</spring.boot.version>
         <lambok.version>1.18.2</lambok.version>
         <am.version>1.0.0-SNAPSHOT</am.version>
         <jest.version>6.3.1</jest.version>
         <percolator-client.version>5.6.0</percolator-client.version>
         <elasticsearch.version>6.0.1</elasticsearch.version>
-        <snakeyaml.version>1.19</snakeyaml.version>
+        <snakeyaml.version>1.23</snakeyaml.version>
         <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
+        <spring-kafka.version>2.2.0.RELEASE</spring-kafka.version>
+        <aws.sdk.version>1.11.126</aws.sdk.version>
+        <ognl.version>3.2.6</ognl.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- spring-kafka -->
+            <dependency>
+                <groupId>org.springframework.kafka</groupId>
+                <artifactId>spring-kafka</artifactId>
+                <version>${spring-kafka.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.expedia.alertmanager</groupId>
                 <artifactId>alert-manager-commons</artifactId>
@@ -97,6 +108,23 @@
                 <groupId>org.elasticsearch.plugin</groupId>
                 <artifactId>percolator-client</artifactId>
                 <version>${percolator-client.version}</version>
+            </dependency>
+
+            <!-- aws -->
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk</artifactId>
+                <version>${aws.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-ses</artifactId>
+                <version>${aws.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ognl</groupId>
+                <artifactId>ognl</artifactId>
+                <version>${ognl.version}</version>
             </dependency>
 
             <dependency>

@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.expedia.alertmanager.model;
+package com.expedia.alertmanager.notifier;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.List;
+@SpringBootApplication
+public class NotifierApplication {
 
-@Data
-@ToString
-@EqualsAndHashCode
-public class ExpressionTree {
-    private Operator operator;
-    List<Operand> operands;
+    public static void main(String[] args) {
+        SpringApplication.run(NotifierApplication.class, args);
+    }
 }

@@ -39,6 +39,7 @@ data "template_file" "config_data" {
   template = "${file("${local.application_yaml_file_path}")}"
 
   vars {
+    kafka_endpoint = "${var.kafka_endpoint}"
     es_urls = "${var.es_urls}"
   }
 }

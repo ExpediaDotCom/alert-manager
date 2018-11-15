@@ -2,6 +2,7 @@ variable "image" {}
 variable "image_pull_policy" {}
 variable "replicas" {}
 variable "namespace" {}
+variable "kafka_endpoint" {}
 variable "es_urls" {}
 variable "graphite_hostname" {}
 variable "graphite_port" {}

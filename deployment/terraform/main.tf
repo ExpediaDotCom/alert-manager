@@ -65,6 +65,7 @@ module "alert-manager-api" {
   env_vars = "${var.alert-manager-api["environment_overrides"]}"
 
   # App
+  kafka_endpoint = "${local.kafka_endpoint}"
   es_urls = "${var.alert-manager-api["es_urls"]}"
 }
 

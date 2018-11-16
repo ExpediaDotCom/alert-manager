@@ -17,6 +17,7 @@ package com.expedia.alertmanager.api.model;
 
 import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.User;
+import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -25,7 +26,22 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class SubscriptionEntity {
-  private User user;
-  private List<Dispatcher> dispatchers;
-  private Query query;
+    // Prefixing variable names with 'am_' to reserve these fields to be used in ES mappings.
+    public static final String USER_KEYWORD = "am_user";
+    public static final String USER_ID_KEYWORD = "id";
+    public static final String DISPATCHERS_KEYWORD = "am_dispatchers";
+    public static final String QUERY_KEYWORD = "am_query";
+    public static final String LAST_MOD_TIME_KEYWORD = "am_lastModifiedTime";
+    public static final String CREATE_TIME_KEYWORD = "am_createdTime";
+
+    @SerializedName(USER_KEYWORD)
+    private User user;
+    @SerializedName(DISPATCHERS_KEYWORD)
+    private List<Dispatcher> dispatchers;
+    @SerializedName(QUERY_KEYWORD)
+    private Query query;
+    @SerializedName(LAST_MOD_TIME_KEYWORD)
+    private long lastModifiedTime;
+    @SerializedName(CREATE_TIME_KEYWORD)
+    private long createdTime;
 }

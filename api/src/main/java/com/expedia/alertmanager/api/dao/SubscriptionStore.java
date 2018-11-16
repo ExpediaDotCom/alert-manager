@@ -17,6 +17,10 @@ package com.expedia.alertmanager.api.dao;
 
 import com.expedia.alertmanager.api.conf.ElasticSearchConfig;
 import com.expedia.alertmanager.api.model.SubscriptionEntity;
+
+import static com.expedia.alertmanager.api.model.SubscriptionEntity.QUERY_KEYWORD;
+import static com.expedia.alertmanager.api.model.SubscriptionEntity.USER_KEYWORD;
+import static com.expedia.alertmanager.api.model.SubscriptionEntity.USER_ID_KEYWORD;
 import com.expedia.alertmanager.api.util.QueryUtil;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.ExpressionTree;
@@ -48,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -71,22 +76,27 @@ public class SubscriptionStore {
     private QueryUtil queryUtil;
 
     public List<String> createSubscriptions(List<CreateSubscriptionRequest> createSubRqs) {
+        /*
+            Fields/Conditions in the expression are dynamic.
+            We want the mapping type of each field to be 'keyword' inorder to find exact match
+            when a search is performed.
+            So the idea is to find all the new fields for which there is no existing mapping types
+            and then create the field mappings for them with type as 'keyword' before a subscription is stored in
+            elastic search.
+         */
         Set<String> fields = getFields(createSubRqs);
-        Set<String> missingFieldMappings = getMissingFieldsMappings(fields);
-        //add new fields to index mappings
-        updateIndexMappings(missingFieldMappings);
+        Set<String> fieldsWithoutExistingMapping = getFieldsWithoutExistingMapping(fields);
+        updateIndexMappings(fieldsWithoutExistingMapping);
 
-        //create subscriptions details
+        //create subscriptions
         return storeSubscriptions(createSubRqs);
     }
 
     private List<String> storeSubscriptions(List<CreateSubscriptionRequest> createSubRqs) {
         Bulk.Builder bulkIndexBuilder = new Bulk.Builder();
         for (CreateSubscriptionRequest rq : createSubRqs) {
-            SubscriptionEntity subscriptionEntity = new SubscriptionEntity(rq.getUser(), rq.getDispatchers(),
-                queryUtil.buildQuery(rq.getExpression()));
-            bulkIndexBuilder.addAction(new Index.Builder(subscriptionEntity)
-                .index(elasticSearchConfig.getIndexName()).type(elasticSearchConfig.getDocType()).build());
+            Index indexReq = buildCreateSubscriptionRequest(rq);
+            bulkIndexBuilder.addAction(indexReq);
         }
         JestClient client = clientFactory.getObject();
         try {
@@ -98,6 +108,15 @@ public class SubscriptionStore {
             log.error("Store subscriptions failed", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private Index buildCreateSubscriptionRequest(CreateSubscriptionRequest createSubRq) {
+        long now = Instant.now().toEpochMilli();
+        SubscriptionEntity subscriptionEntity = new SubscriptionEntity(createSubRq.getUser(),
+            createSubRq.getDispatchers(),
+            queryUtil.buildQuery(createSubRq.getExpression()), now, now);
+        return new Index.Builder(subscriptionEntity)
+            .index(elasticSearchConfig.getIndexName()).type(elasticSearchConfig.getDocType()).build();
     }
 
     private Set<String> getFields(List<CreateSubscriptionRequest> createSubRqs) {
@@ -117,11 +136,8 @@ public class SubscriptionStore {
         Bulk.Builder bulkIndexBuilder = new Bulk.Builder();
         for (UpdateSubscriptionRequest rq : updateSubscriptionRequests) {
             SubscriptionResponse existingSubscription = getSubscription(rq.getId());
-            SubscriptionEntity subscriptionEntity = new SubscriptionEntity(existingSubscription.getUser(),
-                rq.getDispatchers(),
-                queryUtil.buildQuery(rq.getExpression()));
-            bulkIndexBuilder.addAction(new Index.Builder(subscriptionEntity).index(elasticSearchConfig.getIndexName())
-                .type(elasticSearchConfig.getDocType()).id(rq.getId()).build());
+            Index indexReq = buildUpdateSubscriptionRequest(rq, existingSubscription);
+            bulkIndexBuilder.addAction(indexReq);
         }
         JestClient client = clientFactory.getObject();
         try {
@@ -131,6 +147,16 @@ public class SubscriptionStore {
             log.error("Update subscriptions failed", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private Index buildUpdateSubscriptionRequest(UpdateSubscriptionRequest updateSubscriptionReq,
+                                                 SubscriptionResponse existingSubscription) {
+        long now = Instant.now().toEpochMilli();
+        SubscriptionEntity subscriptionEntity = new SubscriptionEntity(existingSubscription.getUser(),
+            updateSubscriptionReq.getDispatchers(),
+            queryUtil.buildQuery(updateSubscriptionReq.getExpression()), now, existingSubscription.getCreatedTime());
+        return new Index.Builder(subscriptionEntity).index(elasticSearchConfig.getIndexName())
+            .type(elasticSearchConfig.getDocType()).id(updateSubscriptionReq.getId()).build();
     }
 
     private void validateResponseStatus(JestResult result) {
@@ -144,16 +170,7 @@ public class SubscriptionStore {
         JestClient client = clientFactory.getObject();
         try {
             if (!missingFieldMappings.isEmpty()) {
-                Map<String, Object> message = new HashMap<>();
-                message.put("type", "keyword");
-                Map<String, Object> properties = new HashMap<>();
-                missingFieldMappings.forEach(field -> {
-                    properties.put(field, message);
-                });
-                Map<String, Object> jsonMap = new HashMap<>();
-                jsonMap.put("properties", properties);
-                PutMapping builder = new PutMapping.Builder(elasticSearchConfig.getIndexName(),
-                    elasticSearchConfig.getDocType(), jsonMap).build();
+                PutMapping builder = buildUpdateMappingsRequest(missingFieldMappings);
                 JestResult result = client.execute(builder);
                 validateResponseStatus(result);
             }
@@ -163,13 +180,23 @@ public class SubscriptionStore {
         }
     }
 
-    private Set<String> getMissingFieldsMappings(Set<String> fields) {
+    private PutMapping buildUpdateMappingsRequest(Set<String> missingFieldMappings) {
+        Map<String, Object> message = new HashMap<>();
+        message.put("type", "keyword");
+        Map<String, Object> properties = new HashMap<>();
+        missingFieldMappings.forEach(field -> {
+            properties.put(field, message);
+        });
+        Map<String, Object> jsonMap = new HashMap<>();
+        jsonMap.put("properties", properties);
+        return new PutMapping.Builder(elasticSearchConfig.getIndexName(),
+            elasticSearchConfig.getDocType(), jsonMap).build();
+    }
+
+    private Set<String> getFieldsWithoutExistingMapping(Set<String> fields) {
         JestClient client = clientFactory.getObject();
         try {
-            GetMapping getMapping = new GetMapping.Builder()
-                .addIndex(elasticSearchConfig.getIndexName())
-                .addType(elasticSearchConfig.getDocType())
-                .build();
+            GetMapping getMapping = buildGetMappingRequest();
             JestResult result = client.execute(getMapping);
             validateResponseStatus(result);
             Set<String> mappedFields = result.getJsonObject().get(elasticSearchConfig.getIndexName())
@@ -178,27 +205,35 @@ public class SubscriptionStore {
                 .get("properties").getAsJsonObject()
                 .entrySet().stream().map(en -> en.getKey()).collect(Collectors.toSet());
             fields.removeAll(mappedFields);
+            return fields;
         } catch (IOException e) {
             log.error("Get index mappings failed", e);
             throw new RuntimeException(e);
         }
-        return fields;
     }
 
-    public List<SubscriptionResponse> searchSubscriptions(String user, Map<String, String> labels) {
+    private GetMapping buildGetMappingRequest() {
+        return new GetMapping.Builder()
+                    .addIndex(elasticSearchConfig.getIndexName())
+                    .addType(elasticSearchConfig.getDocType())
+                    .build();
+    }
+
+    public List<SubscriptionResponse> searchSubscriptions(String userId, Map<String, String> labels) {
         JestClient client = clientFactory.getObject();
         try {
-            if (user != null) {
+            if (userId != null) {
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
                 searchSourceBuilder.query(
-                    QueryBuilders.nestedQuery("user",
-                    QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("user.id", user)), ScoreMode.None));
+                    QueryBuilders.nestedQuery(USER_KEYWORD,
+                    QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(
+                        USER_KEYWORD + "." + USER_ID_KEYWORD, userId)), ScoreMode.None));
                 return getSubscriptionResponses(client, searchSourceBuilder);
             } else {
                 XContentBuilder xContent = XContentFactory.jsonBuilder();
                 xContent.map(labels);
                 PercolateQueryBuilder percolateQuery =
-                    new PercolateQueryBuilder("query", elasticSearchConfig.getDocType(), xContent.bytes(),
+                    new PercolateQueryBuilder(QUERY_KEYWORD, elasticSearchConfig.getDocType(), xContent.bytes(),
                         XContentType.JSON);
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
                 searchSourceBuilder.query(percolateQuery);
@@ -250,6 +285,8 @@ public class SubscriptionStore {
         response.setDispatchers(subscriptionEntity.getDispatchers());
         response.setExpression(queryUtil.buildExpressionTree(subscriptionEntity.getQuery()));
         response.setUser(subscriptionEntity.getUser());
+        response.setLastModifiedTime(subscriptionEntity.getLastModifiedTime());
+        response.setCreatedTime(subscriptionEntity.getCreatedTime());
         return response;
     }
 

@@ -23,5 +23,5 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 public class MustCondition {
-  Map<String, String> match;
+    Map<String, String> match;
 }

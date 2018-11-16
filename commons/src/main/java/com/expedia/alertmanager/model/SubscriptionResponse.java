@@ -25,4 +25,6 @@ import lombok.ToString;
 public class SubscriptionResponse extends BaseSubscription {
     private String id;
     private User user;
+    private long lastModifiedTime;
+    private long createdTime;
 }

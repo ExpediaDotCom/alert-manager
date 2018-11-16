@@ -21,5 +21,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Query {
-  private BoolCondition bool;
+    private BoolCondition bool;
 }

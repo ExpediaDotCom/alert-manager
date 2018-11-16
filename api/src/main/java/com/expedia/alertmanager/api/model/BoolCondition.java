@@ -23,5 +23,5 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class BoolCondition {
-  private List<MustCondition> must;
+    private List<MustCondition> must;
 }

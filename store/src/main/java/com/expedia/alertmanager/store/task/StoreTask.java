@@ -126,11 +126,11 @@ public class StoreTask implements Runnable, Closeable {
             updateStateAndNotify(TaskStateListener.State.RUNNING);
             runLoop();
         } catch(InterruptedException ie) {
-            LOGGER.error("This stream task with taskId=$taskId has been interrupted", ie);
+            LOGGER.error("This stream task with taskId={} has been interrupted", taskId, ie);
         } catch(Exception ex) {
             if (!shutdownRequested.get()) updateStateAndNotify(TaskStateListener.State.FAILED);
             // may be logging the exception again for kafka specific exceptions, but it is ok.
-            LOGGER.error("Stream application faced an exception during processing for taskId=$taskId: ", ex);
+            LOGGER.error("Stream application faced an exception during processing for taskId={}: ", taskId, ex);
         } finally {
             consumer.close(cfg.getCloseTimeoutMillis(), TimeUnit.MILLISECONDS);
             updateStateAndNotify(TaskStateListener.State.CLOSED);
@@ -235,10 +235,11 @@ public class StoreTask implements Runnable, Closeable {
         if (shutdownRequested.get()) throw we;
         wakeups = wakeups + 1;
         if (wakeups == cfg.getMaxWakeups()) {
-            LOGGER.error("WakeupException limit exceeded, throwing up wakeup exception for taskId=$taskId.", we);
+            LOGGER.error("WakeupException limit exceeded, throwing up wakeup exception for taskId={}.", taskId, we);
             throw we;
         } else {
-            LOGGER.error("Consumer poll took more than ${kafkaConfig.wakeupTimeoutInMillis} ms for taskId=$taskId, wakeup attempt=$wakeups!. Will try poll again!");
+            LOGGER.error("Consumer poll took more than {} ms for taskId={}, wakeup attempt={}!. Will try poll again!",
+                    cfg.getWakeupTimeoutInMillis(), wakeups, taskId);
         }
     }
 
@@ -257,15 +258,17 @@ public class StoreTask implements Runnable, Closeable {
         Optional<OffsetAndMetadata> process(final List<ConsumerRecord<String, Alert>> records) throws IOException {
             final List<AlertWithId> alerts = new ArrayList<>();
             final Long[] offset = new Long[1];
+            offset[0] = -1L;
 
             for (final ConsumerRecord<String, Alert> record : records) {
                 if (record.value() != null) {
                     final AlertWithId aId = new AlertWithId();
                     aId.setId(record.topic() + "-" + record.partition() + "-" + record.offset());
                     aId.setAlert(record.value());
+                    aId.getAlert().setStartTime(truncate(aId.getAlert().getStartTime()));
                     alerts.add(aId);
+                    offset[0] = Long.max(record.offset(), offset[0]);
                 }
-                offset[0] = Long.max(record.offset(), offset[0]);
             }
 
             synchronized (this) {
@@ -296,6 +299,10 @@ public class StoreTask implements Runnable, Closeable {
                     return Optional.empty();
                 }
             }
+        }
+
+        private long truncate(long startTime) {
+            return startTime - (startTime % 1000);
         }
     }
 }

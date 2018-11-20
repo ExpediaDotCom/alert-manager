@@ -1,0 +1,23 @@
+version: '3'
+services:
+   elastic:
+    image: elasticsearch:5.5.2-alpine
+    environment:
+      ES_JAVA_OPTS: "-Xms256m -Xmx256m"
+    ports:
+    - "9200:9200"
+   zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+    - "2181:2181"
+   kafkasvc:
+     image: wurstmeister/kafka:2.11-1.1.1
+     depends_on:
+     - zookeeper
+     environment:
+       KAFKA_ADVERTISED_HOST_NAME: "kafkasvc"
+       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+     volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+     ports:
+     - "9092:9092"

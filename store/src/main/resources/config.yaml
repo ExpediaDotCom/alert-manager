@@ -1,6 +1,6 @@
 plugin.directory: "storage-backends/elasticsearch/target"
 plugin:
-   name: "es"
+   name: "elasticsearch"
    jar.name: "elasticsearch-store-1.0.0-SNAPSHOT.jar"
 kafka:
   topic: alerts

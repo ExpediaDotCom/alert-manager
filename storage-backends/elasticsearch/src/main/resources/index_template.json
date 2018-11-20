@@ -1,0 +1,68 @@
+{
+  "template": "alerts*",
+  "settings": {
+    "number_of_shards": 1,
+    "index.mapping.ignore_malformed": true,
+    "analysis": {
+      "normalizer": {
+        "lowercase_normalizer": {
+          "type": "custom",
+          "filter": ["lowercase"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "alerts": {
+      "_source": {
+        "enabled": true
+      },
+      "_field_names": {
+        "enabled": false
+      },
+      "_all": {
+        "enabled": false
+      },
+      "properties": {
+        "startTime": {
+          "type": "long",
+          "doc_values": true
+        },
+        "name": {
+          "type": "keyword",
+          "doc_values": false
+        },
+        "observedValue": {
+          "enabled": false
+        },
+        "expectedValue": {
+          "enabled": false
+        },
+        "generatorURL": {
+          "enabled": false
+        }
+      },
+      "dynamic_templates": [{
+        "strings_as_keywords_1": {
+          "match_mapping_type": "string",
+          "mapping": {
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer",
+            "doc_values": false,
+            "norms": false
+          }
+        }
+      }, {
+          "longs_disable_doc_norms": {
+            "match_mapping_type": "long",
+            "mapping": {
+              "type": "long",
+              "doc_values": false,
+              "norms": false
+            }
+          }
+        }
+      ]
+    }
+  }
+}

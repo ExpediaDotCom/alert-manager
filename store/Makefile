@@ -11,11 +11,15 @@ copy_backend_jars:
 	mkdir -p storage-backends
 	cp ../storage-backends/elasticsearch/target/elasticsearch-store-1.0.0-SNAPSHOT.jar storage-backends/elasticsearch-store.jar
 
-integration_test:
-	${MAVEN} test
+integration_test: docker_build
+	docker-compose -f docker/docker-compose.yaml up -d
+	# sleep for 30 sec to let elastic, kafka to get up
+	sleep 30
 
-# build jar, docker image and run integration tests
-all: docker_build integration_test
+	# run the integration tests now.
+	${MAVEN} test -Pintegration-tests
+
+	docker-compose -f docker/docker-compose.yaml stop
 
 # build all and publish docker images
 release: docker_build

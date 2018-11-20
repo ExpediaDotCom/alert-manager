@@ -9,7 +9,11 @@ clean:
 build:
 	${MAVEN} install package
 
-all: clean build
+all: clean build integration_test
+
+integration_test:
+	$(MAKE) -C store integration_test
+	$(MAKE) -C service integration_test
 
 # build all and release
 release: all

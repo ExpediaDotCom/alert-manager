@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.expedia.alertmanager.store.backend.ElasticSearchStore.ES_INDEX_TYPE;
+import static com.expedia.alertmanager.store.backend.ElasticSearchStore.*;
 
 class Writer {
     private final static String INDEX_NAME_DATE_PATTERN = "yyyy-MM-dd";
@@ -69,13 +69,13 @@ class Writer {
     private XContentBuilder convertAlertToMap(final Alert alert) throws IOException {
         return XContentFactory.jsonBuilder()
                 .startObject()
-                .field("name", alert.getName())
-                .timeValueField("startTime", "startTime", alert.getStartTime())
-                .field("annotations", alert.getAnnotations())
-                .field("labels", alert.getLabels())
-                .field("generatorURL", alert.getGeneratorURL())
-                .field("observedValue", alert.getObservedValue())
-                .field("expectedValue", alert.getExpectedValue())
+                .field(NAME, alert.getName())
+                .field(START_TIME, alert.getStartTime())
+                .field(ANNOTATIONS, alert.getAnnotations())
+                .field(LABELS, alert.getLabels())
+                .field(GENERATOR_URL, alert.getGeneratorURL())
+                .field(OBSERVED_VALUE, alert.getObservedValue())
+                .field(EXPECTED_VALUE, alert.getExpectedValue())
                 .endObject();
     }
 

@@ -50,7 +50,7 @@ public class KafkaConfig {
     private int commitIntervalMillis = 3000;
 
     @JsonProperty("close.timeout.ms")
-    private long closeTimeoutMillis = 1000;
+    private long closeTimeoutMillis = 10000;
 
     @JsonProperty("poll.timeout.ms")
     private long pollTimeoutMillis = 2000;

@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.expedia.alertmanager.store.backend.ElasticSearchStore.*;
+
 class Reader {
     private final Map<String, Object> config;
     private final RestHighLevelClient client;
@@ -45,7 +47,7 @@ class Reader {
         final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
 
         final BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        labels.forEach((key, value) -> boolQuery.must(QueryBuilders.matchQuery(key, value)));
+        labels.forEach((key, value) -> boolQuery.must(QueryBuilders.matchQuery("labels." + key, value.toLowerCase())));
         boolQuery.must(new RangeQueryBuilder("startTime").gt(from).lt(to));
 
         sourceBuilder
@@ -81,12 +83,22 @@ class Reader {
 
     private static Alert convertMapToAlertData(final Map<String, Object> sourceAsMap) {
         final Alert alert = new Alert();
-        alert.setStartTime(Long.parseLong(sourceAsMap.get("startTime").toString()));
-        alert.setName(sourceAsMap.get("name").toString());
-        alert.setLabels((Map<String, String>)sourceAsMap.get("labels"));
-        alert.setAnnotations((Map<String, String>)sourceAsMap.get("annotations"));
-        alert.setObservedValue(sourceAsMap.get("observedValue").toString());
-        alert.setExpectedValue(sourceAsMap.get("expectedValue").toString());
+        alert.setStartTime(Long.parseLong(sourceAsMap.get(START_TIME).toString()));
+        alert.setName(sourceAsMap.get(NAME).toString());
+        alert.setLabels((Map<String, String>)sourceAsMap.get(LABELS));
+        if (sourceAsMap.get(ANNOTATIONS) != null) {
+            alert.setAnnotations((Map<String, String>) sourceAsMap.get(ANNOTATIONS));
+        }
+        if (sourceAsMap.get(OBSERVED_VALUE) != null) {
+            alert.setObservedValue(sourceAsMap.get(OBSERVED_VALUE).toString());
+        }
+        if (sourceAsMap.get(EXPECTED_VALUE) != null) {
+            alert.setExpectedValue(sourceAsMap.get(EXPECTED_VALUE).toString());
+        }
+
+        if (sourceAsMap.get(GENERATOR_URL) != null) {
+            alert.setGeneratorURL(sourceAsMap.get(GENERATOR_URL).toString());
+        }
         return alert;
     }
 

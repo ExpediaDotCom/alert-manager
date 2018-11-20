@@ -39,7 +39,7 @@ public class AlertDeserializer implements Deserializer<Alert> {
         try {
             return mapper.readValue(bytes, Alert.class);
         } catch (Exception ex) {
-            LOGGER.error("Fail to deserialize the incoming bytes {} to alert", new String(bytes), ex);
+            LOGGER.error("Fail to deserialize the incoming bytes to alert", ex);
             return null;
         }
     }

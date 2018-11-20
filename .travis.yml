@@ -19,6 +19,11 @@ cache:
   directories:
     - $HOME/.m2
 
+addons:
+  hosts:
+    - kafkasvc
+    - elasticsearch
+
 script:
   # build, create docker image
   # upload to dockerhub only for master(non PR) and tag scenario

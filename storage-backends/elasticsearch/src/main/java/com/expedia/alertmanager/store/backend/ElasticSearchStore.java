@@ -30,13 +30,26 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.Buffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ElasticSearchStore implements Store {
     final static String ES_INDEX_TYPE = "alerts";
+
+    static String NAME = "name";
+    static String START_TIME = "startTime";
+    static String ANNOTATIONS = "annotations";
+    static String LABELS = "labels";
+    static String EXPECTED_VALUE = "expectedValue";
+    static String OBSERVED_VALUE = "observedValue";
+    static String GENERATOR_URL = "generatorURL";
+
     private final Logger logger = LoggerFactory.getLogger(ElasticSearchStore.class);
     private RestHighLevelClient client;
     private Reader reader;
@@ -67,18 +80,25 @@ public class ElasticSearchStore implements Store {
     }
 
     private void applyIndexTemplate(final Map<String, Object> config) throws IOException {
-        final Object template = config.get("template");
-        if (template != null) {
-            final HttpEntity entity = new NStringEntity(
-                    config.toString(),
-                    ContentType.APPLICATION_JSON);
-            final Response resp = this.client.getLowLevelClient()
-                    .performRequest("PUT", "/template/alert-store-template", new HashMap<>(), entity);
+        Object template = config.get("template");
+        if (template == null) {
+            // read from resource
+            final BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            this.getClass().getResourceAsStream("/index_template.json")));
+            template = reader.lines().collect(Collectors.joining("\n"));
+            reader.close();
+        }
 
-            if (resp.getStatusLine() == null ||
-                    (resp.getStatusLine().getStatusCode() < 200 && resp.getStatusLine().getStatusCode() >= 300)) {
-                throw new IOException(String.format("Fail to execute put template request '%s'", template.toString()));
-            }
+        logger.info("Applying indexing template {}", template);
+
+        final HttpEntity entity = new NStringEntity(template.toString(), ContentType.APPLICATION_JSON);
+        final Response resp = this.client.getLowLevelClient()
+                .performRequest("PUT", "/_template/alert-store-template", new HashMap<>(), entity);
+
+        if (resp.getStatusLine() == null ||
+                (resp.getStatusLine().getStatusCode() < 200 && resp.getStatusLine().getStatusCode() >= 300)) {
+            throw new IOException(String.format("Fail to execute put template request '%s'", template.toString()));
         }
     }
 

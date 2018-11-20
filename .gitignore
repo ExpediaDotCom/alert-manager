@@ -5,6 +5,7 @@ store/target/
 storage-backends/elasticsearch/target/
 notifier/target/
 deprecated-alertmanager/target/
+store/storage-backends/
 logs/
 .mvn/wrapper/maven-wrapper.jar
 .DS_Store

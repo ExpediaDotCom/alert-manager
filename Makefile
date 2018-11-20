@@ -9,10 +9,15 @@ clean:
 build:
 	${MAVEN} install package
 
-all: clean build
+all: clean build integration_test
+
+integration_test:
+	$(MAKE) -C store integration_test
+	$(MAKE) -C service integration_test
 
 # build all and release
 release: all
-	cd api && $(MAKE) release && cd ..
-	cd deprecated-alertmanager && $(MAKE) release && cd ..
-	cd notifier && $(MAKE) release && cd ..
+	$(MAKE) -C service release
+	$(MAKE) -C store release
+	$(MAKE) -C notifier release
+	$(MAKE) -C deprecated-alertmanager release

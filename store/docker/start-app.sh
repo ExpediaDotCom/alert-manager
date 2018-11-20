@@ -20,8 +20,7 @@
 set -e
 JAVA_OPTS="${JAVA_OPTS} \
     -javaagent:${APP_HOME}/${JMXTRANS_AGENT}.jar=${APP_HOME}/jmxtrans-agent.xml \
-    -XX:+UseConcMarkSweepGC \
-    -XX:+UseParNewGC \
+    -XX:+UseG1GC \
     -Xmx${JAVA_XMX} \
     -Xms${JAVA_XMS} \
     -Dcom.sun.management.jmxremote.authenticate=false \
@@ -31,4 +30,4 @@ JAVA_OPTS="${JAVA_OPTS} \
     -Dapplication.home=${APP_HOME}"
 
 
-exec java ${JAVA_OPTS} -jar "${APP_HOME}/alert-manager-notifier.jar" --spring.config.location=/config/application.yml
+exec java ${JAVA_OPTS} -jar "${APP_HOME}/alert-manager-store.jar" /config/application.yml

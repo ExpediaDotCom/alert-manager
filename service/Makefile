@@ -3,7 +3,10 @@
 MAVEN := ../mvnw
 
 export DOCKER_ORG := expediadotcom
-export DOCKER_IMAGE_NAME := alert-manager-notifier
+export DOCKER_IMAGE_NAME := alert-manager-service
+
+docker_build:
+	docker build -t $(DOCKER_IMAGE_NAME) -f docker/Dockerfile .
 
 integration_test:
 	${MAVEN} test

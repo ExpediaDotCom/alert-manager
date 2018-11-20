@@ -21,3 +21,4 @@ release: all
 	$(MAKE) -C store release
 	$(MAKE) -C notifier release
 	$(MAKE) -C deprecated-alertmanager release
+	./.travis/deploy.sh

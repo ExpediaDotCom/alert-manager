@@ -43,7 +43,7 @@ class Reader {
         this.maxSize = maxReadSize(config);
     }
 
-    void read(Map<String, String> labels, long from, long to, ReadCallback callback) throws IOException {
+    void read(Map<String, String> labels, long from, long to, int size, ReadCallback callback) throws IOException {
         final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
 
         final BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
@@ -53,7 +53,7 @@ class Reader {
         sourceBuilder
                 .query(boolQuery)
                 .timeout(readTimeout)
-                .size(maxSize);
+                .size(size == 0 ? maxSize : size);
 
         final SearchRequest searchRequest =
                 new SearchRequest()

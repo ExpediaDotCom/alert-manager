@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package com.expedia.alertmanager.model.store;
 
-import java.io.IOException;
+package com.expedia.alertmanager.model;
+
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 import java.util.List;
-import java.util.Map;
 
-public interface Store {
-    void read(final Map<String, String> labels, long from, long to, int size, ReadCallback callback) throws IOException;
-    void write(final List<AlertWithId> alerts, WriteCallback callback) throws IOException;
-    void init(Map<String, Object> config) throws IOException;
-    void close();
+@Data
+@ToString
+@EqualsAndHashCode
+public class SearchAlertsResponse {
+    private List<Alert> alerts;
 }

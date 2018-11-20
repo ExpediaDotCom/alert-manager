@@ -2,8 +2,8 @@
 
 MAVEN := ../mvnw
 
-docker_build:
-	./build.sh -b
+export DOCKER_ORG := expediadotcom
+export DOCKER_IMAGE_NAME := alert-manager-notifier
 
 integration_test:
 	${MAVEN} test
@@ -13,4 +13,4 @@ all: docker_build integration_test
 
 # build all and publish docker images
 release: docker_build
-	./build.sh --release
+	../deployment/scripts/publish-to-docker-hub.sh

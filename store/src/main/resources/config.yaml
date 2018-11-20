@@ -1,0 +1,12 @@
+plugin.directory: "storage-backends/elasticsearch/target"
+plugin:
+   name: "es"
+   jar.name: "elasticsearch-store-1.0.0-SNAPSHOT.jar"
+kafka:
+  topic: alerts
+  stream.threads: 2
+  consumer:
+    bootstrap.servers: localhost:9092
+    auto.offset.reset: latest
+    group.id: alert-manager-store
+    enable.auto.commit: false

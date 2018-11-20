@@ -59,8 +59,9 @@ public class ElasticSearchStore implements Store {
     public void read(final Map<String, String> labels,
                      final long from,
                      final long to,
+                     final int size,
                      final ReadCallback callback) throws IOException {
-        reader.read(labels, from, to , callback);
+        reader.read(labels, from, to, size, callback);
     }
 
     @Override

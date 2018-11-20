@@ -1,10 +1,5 @@
 /target/
-api/target/
-service/target/
-store/target/
-storage-backends/elasticsearch/target/
-notifier/target/
-deprecated-alertmanager/target/
+**/target/
 store/storage-backends/
 logs/
 .mvn/wrapper/maven-wrapper.jar

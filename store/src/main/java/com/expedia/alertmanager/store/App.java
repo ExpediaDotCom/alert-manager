@@ -61,7 +61,7 @@ public class App {
 
         final URL[] urls = new URL[1];
         File pluginDir = new File(cfg.getPluginDirectory());
-        File[] plugins = pluginDir.listFiles(file -> file.getPath().toLowerCase().endsWith(pluginJarFileName));
+        File[] plugins = pluginDir.listFiles(file -> file.getName().toLowerCase().equals(pluginJarFileName));
 
         if (plugins == null || plugins.length == 0) {
             throw new RuntimeException(

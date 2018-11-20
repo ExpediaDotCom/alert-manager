@@ -20,10 +20,12 @@ ENV APP_HOME /app/bin
 ENV JMXTRANS_AGENT jmxtrans-agent-1.2.6
 
 RUN mkdir -p ${APP_HOME}
+RUN mkdir -p ${APP_HOME}/storage-backends
 
 COPY target/alert-manager-service-1.0.0-SNAPSHOT.jar ${APP_HOME}/alert-manager-service.jar
 COPY docker/start-app.sh ${APP_HOME}/
 COPY docker/jmxtrans-agent.xml ${APP_HOME}/
+COPY storage-backends ${APP_HOME}/storage-backends
 
 ADD https://github.com/jmxtrans/jmxtrans-agent/releases/download/${JMXTRANS_AGENT}/${JMXTRANS_AGENT}.jar ${APP_HOME}/
 

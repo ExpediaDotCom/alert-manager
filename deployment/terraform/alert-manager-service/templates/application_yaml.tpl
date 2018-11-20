@@ -16,3 +16,11 @@ kafka:
     value.serializer: org.springframework.kafka.support.serializer.JsonSerializer
     request.timeout.ms: 40000
     topic: alerts
+
+alert.store:
+  pluginDirectory: "/app/bin/storage-backends"
+  plugins:
+  - name: elasticsearch
+    jarName: "elasticsearch-store.jar"
+    conf:
+     hostname: "${es_urls}"

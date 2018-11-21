@@ -91,7 +91,6 @@ public class ElasticSearchStore implements Store {
         }
 
 
-
         final HttpEntity entity = new NStringEntity(template.toString(), ContentType.APPLICATION_JSON);
         final Response resp = this.client.getLowLevelClient()
                 .performRequest("PUT", "/_template/alert-store-template", new HashMap<>(), entity);

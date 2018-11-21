@@ -52,8 +52,9 @@ class AlertStoreController implements TaskStateListener, Closeable {
 
     void start() throws InterruptedException, IOException {
         LOGGER.info("Starting the span indexing stream..");
+        int parallelWritesPerTask = (int)Math.ceil(config.getParallelWrites() / config.getStreamThreads());
         for(int streamId = 0; streamId < config.getStreamThreads(); streamId++) {
-            final StoreTask task = new StoreTask(streamId, config, store);
+            final StoreTask task = new StoreTask(streamId, config, store, parallelWritesPerTask);
             task.setStateListener(this);
             tasks.add(task);
             streamThreadExecutor.execute(task);

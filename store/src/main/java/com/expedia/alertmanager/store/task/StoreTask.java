@@ -19,6 +19,7 @@ package com.expedia.alertmanager.store.task;
 import com.expedia.alertmanager.model.Alert;
 import com.expedia.alertmanager.model.store.AlertWithId;
 import com.expedia.alertmanager.model.store.Store;
+import com.expedia.alertmanager.model.store.WriteCallback;
 import com.expedia.alertmanager.store.config.KafkaConfig;
 import com.expedia.alertmanager.store.serde.AlertDeserializer;
 import org.apache.kafka.clients.consumer.*;
@@ -44,10 +45,12 @@ public class StoreTask implements Runnable, Closeable {
     private final KafkaConsumer<String, Alert> consumer;
     private final ScheduledExecutorService wakeupScheduler;
     private final AtomicBoolean shutdownRequested;
+    private final ArrayBlockingQueue<StoreWriteCallback> requestedCallbacks;
     private int wakeups = 0;
     private List<TaskStateListener> stateListeners;
     private TaskStateListener.State state;
     private long lastCommitTime;
+    private volatile Map<TopicPartition, OffsetAndMetadata> committableOffsets = Collections.emptyMap();
 
     private class RebalanceListener implements ConsumerRebalanceListener {
         /**
@@ -70,7 +73,8 @@ public class StoreTask implements Runnable, Closeable {
 
     public StoreTask(final int taskId,
                      final KafkaConfig cfg,
-                     final Store store) throws InterruptedException {
+                     final Store store,
+                     final int parallelWrites) throws InterruptedException {
         this.taskId = taskId;
         this.cfg = cfg;
         this.store = store;
@@ -79,6 +83,8 @@ public class StoreTask implements Runnable, Closeable {
         this.shutdownRequested = new AtomicBoolean(false);
         this.state = TaskStateListener.State.NOT_RUNNING;
         this.lastCommitTime = System.currentTimeMillis();
+        this.requestedCallbacks = new ArrayBlockingQueue<>(parallelWrites);
+
         this.consumer = createConsumer(taskId, cfg);
         consumer.subscribe(Collections.singletonList(cfg.getTopic()), new RebalanceListener());
     }
@@ -118,33 +124,65 @@ public class StoreTask implements Runnable, Closeable {
             final Optional<ConsumerRecords<String, Alert>> mayBeRecords = poll();
             if (mayBeRecords.isPresent()) {
                 final ConsumerRecords<String, Alert> records = mayBeRecords.get();
-                final Map<TopicPartition, OffsetAndMetadata> committableOffsets = new HashMap<>();
+                final Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
                 final List<AlertWithId> saveAlerts = new ArrayList<>();
 
                 for (final ConsumerRecord<String, Alert> record : records) {
                     saveAlerts.add(transform(record));
-                    updateCommittableOffset(committableOffsets, record);
+                    updateOffset(offsets, record);
                 }
 
-                final CountDownLatch latch = new CountDownLatch(1);
-                store.write(saveAlerts, ex -> {
-                    if (ex != null) {
-                        // dont commit anything if exception happens
-                        LOGGER.error("Fail to write to elastic search after all retries with error", ex);
-                        updateStateAndNotify(TaskStateListener.State.FAILED);
-                    } else {
-                        latch.countDown();
-                    }
-                });
+                final StoreWriteCallback callback = new StoreWriteCallback(offsets);
+                synchronized (requestedCallbacks) {
+                    requestedCallbacks.put(callback);
+                }
+                store.write(saveAlerts, callback);
 
-                latch.await();
                 // commit offsets
                 commit(committableOffsets, 0);
             }
         }
     }
 
-    private void updateCommittableOffset(final Map<TopicPartition, OffsetAndMetadata> committableOffsets,
+    private class StoreWriteCallback implements WriteCallback {
+        private final Map<TopicPartition, OffsetAndMetadata> offsets;
+        private volatile boolean callbackReceived = false;
+
+        StoreWriteCallback(Map<TopicPartition, OffsetAndMetadata> committableOffsets) {
+            this.offsets = committableOffsets;
+        }
+
+        @Override
+        public void onComplete(Exception ex) {
+            if (ex != null) {
+                // dont commit anything if exception happens
+                LOGGER.error("Fail to write to elastic search after all retries with error", ex);
+                updateStateAndNotify(TaskStateListener.State.FAILED);
+            } else {
+                // commit offsets
+                synchronized (requestedCallbacks) {
+                    StoreWriteCallback committableCallback = null;
+                    for (final StoreWriteCallback cbk : requestedCallbacks) {
+                        if (cbk == this) {
+                            cbk.callbackReceived = true;
+                        }
+                    }
+                    while(true) {
+                        final StoreWriteCallback cbk = requestedCallbacks.peek();
+                        if (cbk != null && cbk.callbackReceived) {
+                            committableCallback = requestedCallbacks.poll();
+                        } else {
+                            break;
+                        }
+                    }
+                    if (committableCallback != null) {
+                        committableOffsets = committableCallback.offsets;
+                    }
+                }
+            }
+        }
+    }
+    private void updateOffset(final Map<TopicPartition, OffsetAndMetadata> committableOffsets,
                                          final ConsumerRecord<String, Alert> record) {
         final TopicPartition topicPartition = new TopicPartition(record.topic(), record.partition());
         final OffsetAndMetadata offset = committableOffsets.get(topicPartition);
@@ -214,10 +252,12 @@ public class StoreTask implements Runnable, Closeable {
             if (currentTime - lastCommitTime >= cfg.getCommitIntervalMillis() &&
                     !offsets.isEmpty() &&
                     retryAttempt <= cfg.getMaxCommitRetries()) {
+                LOGGER.info("committing the offsets now for taskId {}", taskId);
                 consumer.commitSync(offsets);
                 lastCommitTime = currentTime;
             }
         } catch(final CommitFailedException  cfe) {
+            LOGGER.error("Fail to commit offset to kafka with error", cfe);
             Thread.sleep(cfg.getCommitIntervalMillis());
             // retry offset again
             commit(offsets, retryAttempt + 1);

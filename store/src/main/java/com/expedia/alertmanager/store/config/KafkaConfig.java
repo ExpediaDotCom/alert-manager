@@ -55,6 +55,9 @@ public class KafkaConfig {
     @JsonProperty("poll.timeout.ms")
     private long pollTimeoutMillis = 2000;
 
+    @JsonProperty("parallel.writes")
+    private int parallelWrites = 10;
+
     // this consumer map can contain any property that is understood by kafka consumer like group.id, bootstrap.servers
     private Map<Object, Object> consumer = new HashMap<>();
 }

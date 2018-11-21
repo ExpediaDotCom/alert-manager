@@ -45,6 +45,15 @@ spec:
         - name: "JAVA_XMX"
           value: "${jvm_memory_limit}m"
         ${env_vars}
+        livenessProbe:
+         exec:
+          command:
+          - grep
+          - "healthy"
+          - /app/health_status
+         initialDelaySeconds: 30
+         periodSeconds: 10
+         failureThreshold: 2
       nodeSelector:
         ${node_selector_label}
       volumes:

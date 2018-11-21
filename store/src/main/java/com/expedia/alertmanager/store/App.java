@@ -35,7 +35,8 @@ public class App {
     public static void main(String[] args) throws Exception {
         final StoreConfig cfg = loadConfig(args);
         final Store store = loadAndInitializePlugin(cfg);
-        final StorePipeline pipeline = new StorePipeline(cfg.getKafka(), store);
+        final AlertStoreController pipeline =
+                new AlertStoreController(cfg.getKafka(), store, new HealthController(cfg.getHealthStatusFile()));
         pipeline.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

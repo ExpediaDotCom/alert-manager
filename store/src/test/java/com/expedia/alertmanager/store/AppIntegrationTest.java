@@ -55,12 +55,13 @@ public class AppIntegrationTest {
                 "    hostname: http://elasticsearch:9200\n" +
                 "kafka:\n" +
                 "  topic: alerts\n" +
-                "  stream.threads: 4\n" +
+                "  stream.threads: 2\n" +
                 "  consumer:\n" +
                 "    bootstrap.servers: kafkasvc:9092\n" +
                 "    auto.offset.reset: earliest\n" +
                 "    group.id: alert-manager-store\n" +
-                "    enable.auto.commit: false";
+                "    enable.auto.commit: false\n" +
+                "health.status.file: /tmp/health.status";
 
         Files.write(configFilePath, config.getBytes("utf-8"));
 
@@ -107,6 +108,8 @@ public class AppIntegrationTest {
             Assert.assertEquals(alert.get("name"), "a1");
             Assert.assertEquals(alert.get("observedValue"), "5");
             Assert.assertEquals(alert.get("expectedValue"), "10");
+            Assert.assertTrue("timestamp should be truncated to seconds",
+                    Long.parseLong(alert.get("startTime").toString()) % 1000 == 0);
             Assert.assertEquals(((Map<String, String>) alert.get("labels")).get("service"), svc);
         }
     }

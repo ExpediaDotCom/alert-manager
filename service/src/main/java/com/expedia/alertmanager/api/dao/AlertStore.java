@@ -99,15 +99,18 @@ public class AlertStore {
 
         for (final Store store : stores) {
             store.read(labels, from, to, size, (receivedAlerts, ex) -> {
-                if (ex == null) {
-                    synchronized (alerts) {
+                synchronized (alerts) {
+                    if (ex == null) {
                         receivedAlerts.forEach(a -> alerts.add(a.getAlert()));
+                        if (waitForStores.decrementAndGet() == 0) {
+                            response.complete(alerts);
+                        }
+                    } else {
+                        if (waitForStores.getAndSet(0) != 0) {
+                            LOGGER.error("Fail to fetch alerts from the store with error", ex);
+                            response.completeExceptionally(ex);
+                        }
                     }
-                } else {
-                    LOGGER.error("Fail to fetch alerts from the store with error", ex);
-                }
-                if (waitForStores.decrementAndGet() == 0) {
-                    response.complete(alerts);
                 }
             });
         }

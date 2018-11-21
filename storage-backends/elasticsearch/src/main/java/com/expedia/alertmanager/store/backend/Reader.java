@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 import static com.expedia.alertmanager.store.backend.ElasticSearchStore.*;
 
 class Reader {
-    private final Map<String, Object> config;
+    private final static int DEFAULT_MAX_READ_SIZE = 10000;
+    private final static long DEFAULT_READ_TIMEOUT_MS = 15000;
+
     private final RestHighLevelClient client;
     private final String indexNamePrefix;
     private final Logger logger;
@@ -36,7 +38,6 @@ class Reader {
            final String indexNamePrefix,
            final Logger logger) {
         this.client = client;
-        this.config = config;
         this.indexNamePrefix = indexNamePrefix;
         this.logger = logger;
         this.readTimeout = readTimeout(config);
@@ -48,7 +49,7 @@ class Reader {
 
         final BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         labels.forEach((key, value) -> boolQuery.must(QueryBuilders.matchQuery("labels." + key, value.toLowerCase())));
-        boolQuery.must(new RangeQueryBuilder("startTime").gt(from).lt(to));
+        boolQuery.must(new RangeQueryBuilder(START_TIME).gt(from).lt(to));
 
         sourceBuilder
                 .query(boolQuery)
@@ -103,11 +104,11 @@ class Reader {
     }
 
     private int maxReadSize(Map<String, Object> config) {
-        return Integer.parseInt(config.getOrDefault("max.read.size", 10000).toString());
+        return Integer.parseInt(config.getOrDefault("max.read.size", DEFAULT_MAX_READ_SIZE).toString());
     }
 
     private TimeValue readTimeout(final Map<String, Object> config) {
-        final long timeout = Long.parseLong(config.getOrDefault("read.timeout.ms", 15000).toString());
+        final long timeout = Long.parseLong(config.getOrDefault("read.timeout.ms", DEFAULT_READ_TIMEOUT_MS).toString());
         return new TimeValue(timeout, TimeUnit.MILLISECONDS);
     }
 }

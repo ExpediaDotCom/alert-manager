@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.Buffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +90,7 @@ public class ElasticSearchStore implements Store {
             reader.close();
         }
 
-        logger.info("Applying indexing template {}", template);
+
 
         final HttpEntity entity = new NStringEntity(template.toString(), ContentType.APPLICATION_JSON);
         final Response resp = this.client.getLowLevelClient()
@@ -100,6 +99,8 @@ public class ElasticSearchStore implements Store {
         if (resp.getStatusLine() == null ||
                 (resp.getStatusLine().getStatusCode() < 200 && resp.getStatusLine().getStatusCode() >= 300)) {
             throw new IOException(String.format("Fail to execute put template request '%s'", template.toString()));
+        } else {
+            logger.info("indexing template has been successfully applied - '{}'", template);
         }
     }
 

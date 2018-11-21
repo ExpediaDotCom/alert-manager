@@ -21,8 +21,10 @@ import java.util.Map;
 import static com.expedia.alertmanager.store.backend.ElasticSearchStore.*;
 
 class Writer {
+    private final static long DEFAULT_RETRY_BACKOFF_MS = 200;
+    private final static int DEFAULT_MAX_RETRIES = 50;
+
     private final static String INDEX_NAME_DATE_PATTERN = "yyyy-MM-dd";
-    private final Map<String, Object> config;
     private final RestHighLevelClient client;
     private final String indexNamePrefix;
     private final Logger logger;
@@ -34,11 +36,10 @@ class Writer {
                   final String indexNamePrefix, 
                   final Logger logger) {
         this.client = client;
-        this.config = config;
         this.indexNamePrefix = indexNamePrefix;
         this.logger = logger;
-        this.maxRetries = Integer.parseInt(config.getOrDefault("max.retries", 100).toString());
-        this.retryBackOffMillis = Long.parseLong(config.getOrDefault("retry.backoff", 200).toString());
+        this.maxRetries = Integer.parseInt(config.getOrDefault("max.retries", DEFAULT_MAX_RETRIES).toString());
+        this.retryBackOffMillis = Long.parseLong(config.getOrDefault("retry.backoff.ms", DEFAULT_RETRY_BACKOFF_MS).toString());
     }
 
     void write(List<AlertWithId> alerts, WriteCallback callback) throws IOException {

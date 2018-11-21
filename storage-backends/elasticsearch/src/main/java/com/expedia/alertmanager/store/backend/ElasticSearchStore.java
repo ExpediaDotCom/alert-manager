@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.Buffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,8 @@ public class ElasticSearchStore implements Store {
     static String EXPECTED_VALUE = "expectedValue";
     static String OBSERVED_VALUE = "observedValue";
     static String GENERATOR_URL = "generatorURL";
+
+    private final static String DEFAULT_INDEX_PREFIX = "alerts";
 
     private final Logger logger = LoggerFactory.getLogger(ElasticSearchStore.class);
     private RestHighLevelClient client;
@@ -72,8 +73,8 @@ public class ElasticSearchStore implements Store {
     @Override
     public void init(final Map<String, Object> config) throws IOException {
         logger.info("Initializing elastic search store with config {}", config);
-        final String indexNamePrefix = config.getOrDefault("index.prefix", "alerts").toString();
-        final String esHost = config.getOrDefault("hostname", "http://localhost:9092").toString();
+        final String indexNamePrefix = config.getOrDefault("index.prefix", DEFAULT_INDEX_PREFIX).toString();
+        final String esHost = config.getOrDefault("host", "http://localhost:9200").toString();
         this.client = new RestHighLevelClient(RestClient.builder(HttpHost.create(esHost)));
         this.reader = new Reader(client, config, indexNamePrefix, logger);
         this.writer = new Writer(client, config, indexNamePrefix, logger);
@@ -91,15 +92,17 @@ public class ElasticSearchStore implements Store {
             reader.close();
         }
 
-        logger.info("Applying indexing template {}", template);
+        if (!template.toString().isEmpty()) {
+            logger.info("Applying indexing template {}", template);
 
-        final HttpEntity entity = new NStringEntity(template.toString(), ContentType.APPLICATION_JSON);
-        final Response resp = this.client.getLowLevelClient()
-                .performRequest("PUT", "/_template/alert-store-template", new HashMap<>(), entity);
+            final HttpEntity entity = new NStringEntity(template.toString(), ContentType.APPLICATION_JSON);
+            final Response resp = this.client.getLowLevelClient()
+                    .performRequest("PUT", "/_template/alert-store-template", new HashMap<>(), entity);
 
-        if (resp.getStatusLine() == null ||
-                (resp.getStatusLine().getStatusCode() < 200 && resp.getStatusLine().getStatusCode() >= 300)) {
-            throw new IOException(String.format("Fail to execute put template request '%s'", template.toString()));
+            if (resp.getStatusLine() == null ||
+                    (resp.getStatusLine().getStatusCode() < 200 && resp.getStatusLine().getStatusCode() >= 300)) {
+                throw new IOException(String.format("Fail to execute put template request '%s'", template.toString()));
+            }
         }
     }
 

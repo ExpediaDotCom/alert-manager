@@ -33,7 +33,7 @@ public class ConfigurationLoader {
     public static StoreConfig loadConfig(final File configFile) throws IOException {
         final InputStream configStream;
         if (configFile == null) {
-            configStream = App.class.getResourceAsStream("/config.yaml");
+            configStream = App.class.getResourceAsStream("/application.yaml");
         } else {
             LOGGER.info("Loading the configuration from file file {}", configFile.getAbsolutePath());
             configStream = new FileInputStream(configFile);

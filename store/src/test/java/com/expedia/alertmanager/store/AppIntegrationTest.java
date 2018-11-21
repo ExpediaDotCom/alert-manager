@@ -60,7 +60,8 @@ public class AppIntegrationTest {
                 "    bootstrap.servers: kafkasvc:9092\n" +
                 "    auto.offset.reset: earliest\n" +
                 "    group.id: alert-manager-store\n" +
-                "    enable.auto.commit: false";
+                "    enable.auto.commit: false\n" +
+                "health.status.file: /tmp/health.status";
 
         Files.write(configFilePath, config.getBytes("utf-8"));
 

@@ -34,4 +34,7 @@ public class StoreConfig {
 
     @JsonProperty("plugin")
     private PluginConfig plugin = null;
+
+    @JsonProperty("health.status.file")
+    private String healthStatusFile = "";
 }

@@ -43,7 +43,6 @@ public class StoreTask implements Runnable, Closeable {
 
     private final KafkaConsumer<String, Alert> consumer;
     private final ScheduledExecutorService wakeupScheduler;
-    private Map<TopicPartition, PartitionProcessor> processors;
     private final AtomicBoolean shutdownRequested;
     private int wakeups = 0;
     private List<TaskStateListener> stateListeners;
@@ -58,9 +57,6 @@ public class StoreTask implements Runnable, Closeable {
         @Override
         public void onPartitionsRevoked(Collection<TopicPartition> revokedPartitions) {
             LOGGER.info("Partitions {} revoked at the beginning of consumer rebalance for taskId={}", revokedPartitions, taskId);
-            for (final TopicPartition topicPartition : revokedPartitions) {
-                processors.remove(topicPartition);
-            }
         }
 
         /**
@@ -69,48 +65,16 @@ public class StoreTask implements Runnable, Closeable {
          */
         public void onPartitionsAssigned(Collection<TopicPartition> assignedPartitions) {
             LOGGER.info("Partitions {} assigned at the beginning of consumer rebalance for taskId={}", assignedPartitions, taskId);
-
-            for (final TopicPartition topicPartition : assignedPartitions) {
-                final PartitionProcessor processor = new PartitionProcessor();
-                processors.putIfAbsent(topicPartition, processor);
-            }
-        }
-    }
-
-    /**
-     * run the consumer loop till the shutdown is requested or any exception is thrown
-     */
-    private void runLoop() throws InterruptedException {
-        while(!shutdownRequested.get()) {
-            final Optional<ConsumerRecords<String, Alert>> mayBeRecords = poll();
-            if (mayBeRecords.isPresent()) {
-                final ConsumerRecords<String, Alert> records = mayBeRecords.get();
-                if (!records.isEmpty() && !processors.isEmpty()) {
-                    final Map<TopicPartition, OffsetAndMetadata> committableOffsets = new HashMap<>();
-                    final Map<Integer, List<ConsumerRecord<String, Alert>>> partitionedRecords = new HashMap<>();
-
-                    for (final ConsumerRecord<String, Alert> record : records) {
-                        final List<ConsumerRecord<String, Alert>> recs =
-                                partitionedRecords.computeIfAbsent(record.partition(), k -> new ArrayList<>());
-                        recs.add(record);
-                    }
-                    partitionedRecords.forEach((partition, pRecords) -> invokeProcessor(partition, pRecords, committableOffsets));
-
-                    // commit offsets
-                    commit(committableOffsets, 0);
-                }
-            }
         }
     }
 
     public StoreTask(final int taskId,
-              final KafkaConfig cfg,
-              final Store store) throws InterruptedException {
+                     final KafkaConfig cfg,
+                     final Store store) throws InterruptedException {
         this.taskId = taskId;
         this.cfg = cfg;
         this.store = store;
         this.stateListeners = new ArrayList<>();
-        this.processors = new ConcurrentHashMap<>();
         this.wakeupScheduler = Executors.newScheduledThreadPool(1);
         this.shutdownRequested = new AtomicBoolean(false);
         this.state = TaskStateListener.State.NOT_RUNNING;
@@ -146,6 +110,61 @@ public class StoreTask implements Runnable, Closeable {
         this.stateListeners.add(listener);
     }
 
+    /**
+     * run the consumer loop till the shutdown is requested or any exception is thrown
+     */
+    private void runLoop() throws InterruptedException, IOException {
+        while(!shutdownRequested.get()) {
+            final Optional<ConsumerRecords<String, Alert>> mayBeRecords = poll();
+            if (mayBeRecords.isPresent()) {
+                final ConsumerRecords<String, Alert> records = mayBeRecords.get();
+                final Map<TopicPartition, OffsetAndMetadata> committableOffsets = new HashMap<>();
+                final List<AlertWithId> saveAlerts = new ArrayList<>();
+
+                for (final ConsumerRecord<String, Alert> record : records) {
+                    saveAlerts.add(transform(record));
+                    updateCommittableOffset(committableOffsets, record);
+                }
+
+                final CountDownLatch latch = new CountDownLatch(1);
+                store.write(saveAlerts, ex -> {
+                    if (ex != null) {
+                        // dont commit anything if exception happens
+                        LOGGER.error("Fail to write to elastic search after all retries with error", ex);
+                        updateStateAndNotify(TaskStateListener.State.FAILED);
+                    } else {
+                        latch.countDown();
+                    }
+                });
+
+                latch.await();
+                // commit offsets
+                commit(committableOffsets, 0);
+            }
+        }
+    }
+
+    private void updateCommittableOffset(final Map<TopicPartition, OffsetAndMetadata> committableOffsets,
+                                         final ConsumerRecord<String, Alert> record) {
+        final TopicPartition topicPartition = new TopicPartition(record.topic(), record.partition());
+        final OffsetAndMetadata offset = committableOffsets.get(topicPartition);
+        if (offset == null) {
+            committableOffsets.put(topicPartition, new OffsetAndMetadata(record.offset()));
+        } else {
+            if (offset.offset() < record.offset()) {
+                committableOffsets.put(topicPartition, new OffsetAndMetadata(record.offset()));
+            }
+        }
+    }
+
+    private AlertWithId transform(ConsumerRecord<String, Alert> record) {
+        final AlertWithId aId = new AlertWithId();
+        aId.setId(record.topic() + "-" + record.partition() + "-" + record.offset());
+        aId.setAlert(record.value());
+        aId.getAlert().setStartTime(truncate(aId.getAlert().getStartTime()));
+        return aId;
+    }
+
     private List<TaskStateListener> getStateListeners() {
         return stateListeners;
     }
@@ -156,22 +175,6 @@ public class StoreTask implements Runnable, Closeable {
 
             // invoke listeners for any state change
             getStateListeners().forEach(listener -> listener.onChange(state));
-        }
-    }
-
-    private void invokeProcessor(final Integer partition,
-                                 final List<ConsumerRecord<String, Alert>> records,
-                                 final Map<TopicPartition, OffsetAndMetadata> committableOffsets) {
-        final TopicPartition topicPartition = new TopicPartition(cfg.getTopic(), partition);
-        final PartitionProcessor processor = processors.get(topicPartition);
-
-        try {
-            if (processor != null) {
-                final Optional<OffsetAndMetadata> offsetMetadata = processor.process(records);
-                offsetMetadata.ifPresent(offset -> committableOffsets.put(topicPartition, offset));
-            }
-        } catch (Exception ex) {
-            LOGGER.error("Fail to process the alert records with error", ex);
         }
     }
 
@@ -218,7 +221,7 @@ public class StoreTask implements Runnable, Closeable {
             Thread.sleep(cfg.getCommitIntervalMillis());
             // retry offset again
             commit(offsets, retryAttempt + 1);
-        } catch (final Exception ex){
+        } catch (final Exception ex) {
             LOGGER.error("Fail to commit the offsets with exception", ex);
         }
     }
@@ -251,58 +254,7 @@ public class StoreTask implements Runnable, Closeable {
         return new KafkaConsumer<>(props, new StringDeserializer(), new AlertDeserializer());
     }
 
-    private final class PartitionProcessor {
-        long commitableOffset = -1L;
-        long expectedMinOffsetInCallback = -1L;
-
-        Optional<OffsetAndMetadata> process(final List<ConsumerRecord<String, Alert>> records) throws IOException {
-            final List<AlertWithId> alerts = new ArrayList<>();
-            final Long[] offset = new Long[1];
-            offset[0] = -1L;
-
-            for (final ConsumerRecord<String, Alert> record : records) {
-                if (record.value() != null) {
-                    final AlertWithId aId = new AlertWithId();
-                    aId.setId(record.topic() + "-" + record.partition() + "-" + record.offset());
-                    aId.setAlert(record.value());
-                    aId.getAlert().setStartTime(truncate(aId.getAlert().getStartTime()));
-                    alerts.add(aId);
-                    offset[0] = Long.max(record.offset(), offset[0]);
-                }
-            }
-
-            synchronized (this) {
-                if (expectedMinOffsetInCallback == -1L) {
-                    expectedMinOffsetInCallback = offset[0];
-                }
-            }
-
-            store.write(alerts, ex -> {
-                if (ex == null) {
-                    synchronized (this) {
-                        if (offset[0] == expectedMinOffsetInCallback) {
-                            commitableOffset = expectedMinOffsetInCallback;
-                        }
-                    }
-                } else {
-                    LOGGER.error("Fail to write the alerts to store with error", ex);
-                }
-            });
-
-            synchronized (this) {
-                if (commitableOffset >= 0) {
-                    final Optional<OffsetAndMetadata> offsetAndMetadata = Optional.of(new OffsetAndMetadata(commitableOffset));
-                    commitableOffset = -1L;
-                    expectedMinOffsetInCallback = -1L;
-                    return offsetAndMetadata;
-                } else {
-                    return Optional.empty();
-                }
-            }
-        }
-
-        private long truncate(long startTime) {
-            return startTime - (startTime % 1000);
-        }
+    private long truncate(long startTime) {
+        return (startTime/1000) * 1000;
     }
 }

@@ -24,29 +24,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class StorePipeline implements TaskStateListener, Closeable {
-    private final static Logger LOGGER = LoggerFactory.getLogger(StorePipeline.class);
+class AlertStoreController implements TaskStateListener, Closeable {
+    private final static Logger LOGGER = LoggerFactory.getLogger(AlertStoreController.class);
 
     private final KafkaConfig config;
     private final Store store;
     private final ExecutorService streamThreadExecutor;
     private final AtomicBoolean isStarted = new AtomicBoolean(false);
+    private final HealthController healthController;
     private List<StoreTask> tasks = new ArrayList<>();
 
-    StorePipeline(final KafkaConfig config,
-                  final Store store) {
+    AlertStoreController(final KafkaConfig config,
+                         final Store store,
+                         final HealthController healthController) {
         this.config = config;
         this.store = store;
         this.streamThreadExecutor = Executors.newFixedThreadPool(config.getStreamThreads());
+        this.healthController = healthController;
     }
 
-    void start() throws InterruptedException {
+    void start() throws InterruptedException, IOException {
         LOGGER.info("Starting the span indexing stream..");
         for(int streamId = 0; streamId < config.getStreamThreads(); streamId++) {
             final StoreTask task = new StoreTask(streamId, config, store);
@@ -56,12 +60,14 @@ class StorePipeline implements TaskStateListener, Closeable {
         }
 
         isStarted.set(true);
+        healthController.setHealthy();
     }
 
     @Override
     public void onChange(final State state) {
-        if(state == TaskStateListener.State.FAILED) {
+        if(state == State.FAILED) {
             LOGGER.error("Thread state has changed to 'FAILED'");
+            healthController.setUnhealthy();
         } else {
             LOGGER.info("Task state has changed to {}", state);
         }

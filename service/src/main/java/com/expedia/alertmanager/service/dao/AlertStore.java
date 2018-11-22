@@ -69,7 +69,7 @@ public class AlertStore {
             }
 
             final URL[] urls = new URL[] { plugins[0].toURI().toURL() };
-            final URLClassLoader ucl = new URLClassLoader(urls);
+            final URLClassLoader ucl = new URLClassLoader(urls, Store.class.getClassLoader());
             final ServiceLoader<Store> loader = ServiceLoader.load(Store.class, ucl);
 
             // load and initialize the plugin

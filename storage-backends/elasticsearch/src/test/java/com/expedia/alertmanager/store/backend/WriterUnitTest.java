@@ -65,7 +65,7 @@ public class WriterUnitTest {
     }
 
     @Test
-    public void testWriterWithFailureAndSuccess() throws IOException {
+    public void writeWithRetryTest() throws IOException {
         EasyMock.expectLastCall().andAnswer(() -> {
             final Writer.BulkActionListener l = (Writer.BulkActionListener)capturedListener.getValue();
 
@@ -92,7 +92,7 @@ public class WriterUnitTest {
     }
 
     @Test
-    public void testWriterWithFailure() throws IOException {
+    public void writeWithFailureTest() throws IOException {
         EasyMock.expectLastCall().andAnswer(() -> {
             capturedListener.getValue().onFailure(new RuntimeException("fail to index"));
             return null;
@@ -114,7 +114,7 @@ public class WriterUnitTest {
     }
 
     @Test
-    public void testWriterWithSuccess() throws IOException {
+    public void writeWithSuccessTest() throws IOException {
         EasyMock.expectLastCall().andAnswer(() -> {
             capturedListener.getValue().onResponse(buildBulkResponse());
             return null;

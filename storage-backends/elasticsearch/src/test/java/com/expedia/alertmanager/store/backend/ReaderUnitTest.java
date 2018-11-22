@@ -61,6 +61,25 @@ public class ReaderUnitTest {
     }
 
     @Test
+    public void readFailureTest() {
+        EasyMock.expectLastCall().andAnswer(() -> {
+            capturedListener.getValue().onFailure(new RuntimeException("fail to read from elastic!"));
+            return null;
+        });
+
+        EasyMock.replay(mockClient);
+        final Boolean[] expectWriteCallback = new Boolean[] { false };
+        final Map<String, String> labels = Collections.singletonMap("service", "svc1");
+        this.reader.read(labels, timestamp - 10000, timestamp, 100, (alerts, ex) -> {
+            if(ex == null) {
+                Assert.fail("no exception is expected in searching alerts");
+            }
+            expectWriteCallback[0] = true;
+        });
+        applyAsserts(expectWriteCallback[0]);
+    }
+
+    @Test
     public void readAlertsTest() {
         EasyMock.expectLastCall().andAnswer(() -> {
             capturedListener.getValue().onResponse(buildSearchResponse());
@@ -78,7 +97,11 @@ public class ReaderUnitTest {
             Assert.assertEquals(alerts.size(), 1);
             expectWriteCallback[0] = true;
         });
-        Assert.assertEquals(expectWriteCallback[0], true);
+        applyAsserts(expectWriteCallback[0]);
+    }
+
+    private void applyAsserts(final boolean expectWriteCallback) {
+        Assert.assertEquals(expectWriteCallback, true);
         final SearchRequest req = capturedRequest.getValue();
         Assert.assertEquals("search indices should match", "alerts*", req.indices()[0]);
         Assert.assertEquals("request query should match", "{\n" +

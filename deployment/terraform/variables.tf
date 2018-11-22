@@ -20,3 +20,7 @@ variable "alert-manager-notifier" {
   type = "map"
 }
 
+variable "alert-manager-store" {
+  type = "map"
+}
+

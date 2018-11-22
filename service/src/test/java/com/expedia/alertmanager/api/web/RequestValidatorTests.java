@@ -16,39 +16,112 @@
 package com.expedia.alertmanager.api.web;
 
 import com.expedia.alertmanager.model.ExpressionTree;
+import com.expedia.alertmanager.model.Field;
+import com.expedia.alertmanager.model.Operand;
+import com.expedia.alertmanager.model.Operator;
 import com.expedia.alertmanager.model.User;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+import java.util.Arrays;
 import java.util.Collections;
+
+import static com.expedia.alertmanager.api.model.SubscriptionEntity.CREATE_TIME_KEYWORD;
+import static com.expedia.alertmanager.api.model.SubscriptionEntity.DISPATCHERS_KEYWORD;
+import static com.expedia.alertmanager.api.model.SubscriptionEntity.QUERY_KEYWORD;
+import static com.expedia.alertmanager.api.model.SubscriptionEntity.USER_KEYWORD;
+import static com.expedia.alertmanager.api.web.TestUtil.operand;
 
 public class RequestValidatorTests {
 
+    @Rule
+    private ExpectedException thrown = ExpectedException.none();
+
     private RequestValidator requestValidator = new RequestValidator();
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void givenNullUser_validateUserShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("subscription user can't null");
         requestValidator.validateUser(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void givenEmptyUser_validateUserShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("subscription userId can't empty");
         requestValidator.validateUser(new User());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
+    public void givenUserWithUserIdHavingWhiteSpace_validateUserShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("subscription userId can't contain whitespaces");
+        User user  = new User();
+        user.setId("id id");
+        requestValidator.validateUser(user);
+    }
+
+    @Test
     public void givenEmptyDispatcherList_validateDispatchersShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("subscription dispatchers can't empty");
         requestValidator.validateDispatcher(Collections.emptyList());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void givenNullExpression_validateExpressionShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("subscription expression can't null");
         requestValidator.validateExpression(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void givenEmptyExpression_validateExpressionShouldFail() {
-        requestValidator.validateExpression(new ExpressionTree());
+    @Test
+    public void givenAnExpressionWith_OR_Operator_validateExpressionShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Only AND operator is supported now");
+        ExpressionTree expressionTree = new ExpressionTree();
+        expressionTree.setOperator(Operator.OR);
+        requestValidator.validateExpression(expressionTree);
     }
 
-    //TODO - need to add more extensive test cases
+    @Test
+    public void givenAnExpressionWithEmptyOperands_validateExpressionShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Operands can't be empty");
+        ExpressionTree expressionTree = new ExpressionTree();
+        expressionTree.setOperator(Operator.AND);
+        requestValidator.validateExpression(expressionTree);
+    }
+
+    @Test
+    public void givenAnExpressionWithOperandsHavingReserved_QueryKeyword_validateExpressionShouldFail() {
+        assertExpressionOperandName(QUERY_KEYWORD);
+    }
+
+    @Test
+    public void givenAnExpressionWithOperandsHavingReserved_UserKeyword_validateExpressionShouldFail() {
+        assertExpressionOperandName(USER_KEYWORD);
+    }
+
+    @Test
+    public void givenAnExpressionWithOperandsHavingReserved_CreatedTimeKeyword_validateExpressionShouldFail() {
+        assertExpressionOperandName(CREATE_TIME_KEYWORD);
+    }
+
+    @Test
+    public void givenAnExpressionWithOperandsHavingReserved_DispatcherKeyword_validateExpressionShouldFail() {
+        assertExpressionOperandName(DISPATCHERS_KEYWORD);
+    }
+
+    private void assertExpressionOperandName(String operandName) {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(String.format("%s is a reserved field and can't be used as an operand field key",
+            operandName));
+        ExpressionTree expressionTree = new ExpressionTree();
+        expressionTree.setOperator(Operator.AND);
+        expressionTree.setOperands(Arrays.asList(operand(operandName, "test")));
+        requestValidator.validateExpression(expressionTree);
+    }
 }

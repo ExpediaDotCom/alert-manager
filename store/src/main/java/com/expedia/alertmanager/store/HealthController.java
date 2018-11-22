@@ -14,15 +14,33 @@
  * limitations under the License.
  */
 
-package com.expedia.alertmanager.model.store;
+package com.expedia.alertmanager.store;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-public interface Store {
-    void read(final Map<String, String> labels, long from, long to, int size, ReadCallback callback);
-    void write(final List<AlertWithId> alerts, WriteCallback callback);
-    void init(Map<String, Object> config) throws IOException;
-    void close();
+class HealthController {
+
+    private final String statusFile;
+
+    HealthController(final String statusFile) {
+        this.statusFile = statusFile;
+    }
+
+    void setUnhealthy() {
+        write("unhealthy");
+    }
+
+    void setHealthy() {
+        write("healthy");
+    }
+
+    private void write(final String status) {
+        try {
+            Files.write(Paths.get(statusFile), status.getBytes());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
 }

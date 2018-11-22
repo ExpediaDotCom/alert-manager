@@ -21,49 +21,88 @@ import java.util.Map;
 import static com.expedia.alertmanager.store.backend.ElasticSearchStore.*;
 
 class Writer {
+    private final static long DEFAULT_RETRY_BACKOFF_MS = 200;
+    private final static int DEFAULT_MAX_RETRIES = 50;
+
     private final static String INDEX_NAME_DATE_PATTERN = "yyyy-MM-dd";
-    private final Map<String, Object> config;
     private final RestHighLevelClient client;
     private final String indexNamePrefix;
     private final Logger logger;
+    private final int maxRetries;
+    private final long retryBackOffMillis;
 
     Writer(final RestHighLevelClient client,
-                  final Map<String, Object> config, 
-                  final String indexNamePrefix, 
-                  final Logger logger) {
+           final Map<String, Object> config,
+           final String indexNamePrefix,
+           final Logger logger) {
         this.client = client;
-        this.config = config;
         this.indexNamePrefix = indexNamePrefix;
         this.logger = logger;
+        this.maxRetries = Integer.parseInt(config.getOrDefault("max.retries", DEFAULT_MAX_RETRIES).toString());
+        this.retryBackOffMillis = Long.parseLong(config.getOrDefault("retry.backoff.ms", DEFAULT_RETRY_BACKOFF_MS).toString());
     }
 
-    void write(List<AlertWithId> alerts, WriteCallback callback) throws IOException {
+    void write(List<AlertWithId> alerts, WriteCallback callback) {
         final BulkRequest bulkRequest = new BulkRequest();
         final SimpleDateFormat formatter = new SimpleDateFormat(INDEX_NAME_DATE_PATTERN);
-        for (final AlertWithId alertWrapper : alerts) {
-            final String idxName = indexName(formatter, alertWrapper.getAlert().getStartTime());
-            final IndexRequest indexRequest = new IndexRequest(idxName, ES_INDEX_TYPE, alertWrapper.getId());
-            indexRequest.source(convertAlertToMap(alertWrapper.getAlert()));
-            bulkRequest.add(indexRequest);
+
+        try {
+            for (final AlertWithId alertWrapper : alerts) {
+                final String idxName = indexName(formatter, alertWrapper.getAlert().getStartTime());
+                final IndexRequest indexRequest = new IndexRequest(idxName, ES_INDEX_TYPE, alertWrapper.getId());
+                indexRequest.source(convertAlertToMap(alertWrapper.getAlert()));
+                bulkRequest.add(indexRequest);
+                this.client.bulkAsync(bulkRequest, new BulkActionListener(bulkRequest, callback, 0));
+            }
+        } catch (IOException ex) {
+            callback.onComplete(ex);
+        }
+    }
+
+    final class BulkActionListener implements ActionListener<BulkResponse> {
+
+        private final WriteCallback callback;
+        private final int retryCount;
+        private final BulkRequest bulkRequest;
+
+        BulkActionListener(final BulkRequest bulkRequest, final WriteCallback callback, int retryCount) {
+            this.callback = callback;
+            this.bulkRequest = bulkRequest;
+            this.retryCount = retryCount;
         }
 
-        this.client.bulkAsync(bulkRequest, new ActionListener<BulkResponse>() {
-            @Override
-            public void onResponse(BulkResponse bulkItemResponses) {
-                if (bulkItemResponses.hasFailures()) {
-                    callback.onComplete(
-                            new RuntimeException("Fail to execute the elastic search write with partial failures:"
-                                    + bulkItemResponses.buildFailureMessage()));
-                } else {
-                    callback.onComplete(null);
-                }
+        @Override
+        public void onResponse(BulkResponse bulkItemResponses) {
+            if (bulkItemResponses.hasFailures()) {
+                retry(new RuntimeException("Fail to execute the elastic search write with partial failures:"
+                        + bulkItemResponses.buildFailureMessage()));
+            } else {
+                callback.onComplete(null);
             }
+        }
 
-            @Override
-            public void onFailure(Exception e) {
+        @Override
+        public void onFailure(Exception e) {
+            retry(e);
+        }
+
+        private void retry(final Exception e) {
+            if (retryCount < maxRetries) {
+                try {
+                    Thread.sleep(retryBackOffMillis);
+                    client.bulkAsync(bulkRequest, new BulkActionListener(bulkRequest, callback, retryCount + 1));
+                } catch (InterruptedException e1) {
+                    callback.onComplete(e);
+                }
+            } else {
+                logger.error("All retries while writing to elastic search have been exhausted");
                 callback.onComplete(e);
             }
-        });
+        }
+        // visible for testing
+        public int getRetryCount() {
+            return retryCount;
+        }
     }
 
     private XContentBuilder convertAlertToMap(final Alert alert) throws IOException {

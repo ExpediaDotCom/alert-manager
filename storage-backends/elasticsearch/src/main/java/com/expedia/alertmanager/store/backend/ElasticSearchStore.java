@@ -61,12 +61,12 @@ public class ElasticSearchStore implements Store {
                      final long from,
                      final long to,
                      final int size,
-                     final ReadCallback callback) throws IOException {
+                     final ReadCallback callback) {
         reader.read(labels, from, to, size, callback);
     }
 
     @Override
-    public void write(final List<AlertWithId> alerts, final WriteCallback callback) throws IOException {
+    public void write(final List<AlertWithId> alerts, final WriteCallback callback) {
         writer.write(alerts, callback);
     }
 
@@ -94,7 +94,6 @@ public class ElasticSearchStore implements Store {
 
         if (!template.toString().isEmpty()) {
             logger.info("Applying indexing template {}", template);
-
             final HttpEntity entity = new NStringEntity(template.toString(), ContentType.APPLICATION_JSON);
             final Response resp = this.client.getLowLevelClient()
                     .performRequest("PUT", "/_template/alert-store-template", new HashMap<>(), entity);
@@ -102,6 +101,8 @@ public class ElasticSearchStore implements Store {
             if (resp.getStatusLine() == null ||
                     (resp.getStatusLine().getStatusCode() < 200 && resp.getStatusLine().getStatusCode() >= 300)) {
                 throw new IOException(String.format("Fail to execute put template request '%s'", template.toString()));
+            } else {
+                logger.info("indexing template has been successfully applied - '{}'", template);
             }
         }
     }

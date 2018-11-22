@@ -19,7 +19,7 @@ integration_test: docker_build
 	# run the integration tests now.
 	${MAVEN} test -Pintegration-tests
 
-	docker-compose -f docker/docker-compose.yaml stop
+	# docker-compose -f docker/docker-compose.yaml stop
 
 # build all and publish docker images
 release: docker_build

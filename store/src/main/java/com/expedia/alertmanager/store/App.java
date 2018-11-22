@@ -35,7 +35,8 @@ public class App {
     public static void main(String[] args) throws Exception {
         final StoreConfig cfg = loadConfig(args);
         final Store store = loadAndInitializePlugin(cfg);
-        final StorePipeline pipeline = new StorePipeline(cfg.getKafka(), store);
+        final AlertStoreController pipeline =
+                new AlertStoreController(cfg.getKafka(), store, new HealthController(cfg.getHealthStatusFile()));
         pipeline.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -59,21 +60,17 @@ public class App {
 
         LOGGER.info("Loading the store plugin with name={}", pluginName);
 
-        final URL[] urls = new URL[1];
         File pluginDir = new File(cfg.getPluginDirectory());
         File[] plugins = pluginDir.listFiles(file -> file.getName().toLowerCase().equals(pluginJarFileName));
 
-        if (plugins == null || plugins.length == 0) {
+        if (plugins == null || plugins.length != 1) {
             throw new RuntimeException(
                     String.format("Fail to find the plugin with jarName=%s in the directory=%s",
                             pluginJarFileName,
                             cfg.getPluginDirectory()));
         }
 
-        for (int i = 0; i < plugins.length; i++) {
-            urls[i] = plugins[i].toURI().toURL();
-        }
-
+        final URL[] urls = new URL[] { plugins[0].toURI().toURL() };
         final URLClassLoader ucl = new URLClassLoader(urls);
         final ServiceLoader<Store> loader = ServiceLoader.load(Store.class, ucl);
 

@@ -15,7 +15,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,9 @@ import java.util.concurrent.TimeUnit;
 import static com.expedia.alertmanager.store.backend.ElasticSearchStore.*;
 
 class Reader {
-    private final Map<String, Object> config;
+    private final static int DEFAULT_MAX_READ_SIZE = 10000;
+    private final static long DEFAULT_READ_TIMEOUT_MS = 15000;
+
     private final RestHighLevelClient client;
     private final String indexNamePrefix;
     private final Logger logger;
@@ -36,19 +37,22 @@ class Reader {
            final String indexNamePrefix,
            final Logger logger) {
         this.client = client;
-        this.config = config;
         this.indexNamePrefix = indexNamePrefix;
         this.logger = logger;
         this.readTimeout = readTimeout(config);
         this.maxSize = maxReadSize(config);
     }
 
-    void read(Map<String, String> labels, long from, long to, int size, ReadCallback callback) throws IOException {
+    void read(final Map<String, String> labels,
+              final long from,
+              final long to,
+              final int size,
+              final ReadCallback callback) {
         final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
 
         final BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        labels.forEach((key, value) -> boolQuery.must(QueryBuilders.matchQuery("labels." + key, value.toLowerCase())));
-        boolQuery.must(new RangeQueryBuilder("startTime").gt(from).lt(to));
+        labels.forEach((key, value) -> boolQuery.must(QueryBuilders.matchQuery(LABELS + '.' + key, value)));
+        boolQuery.must(new RangeQueryBuilder(START_TIME).gt(from).lt(to));
 
         sourceBuilder
                 .query(boolQuery)
@@ -62,19 +66,21 @@ class Reader {
 
         this.client.searchAsync(searchRequest, new ActionListener<SearchResponse>() {
             @Override
-            public void onResponse(SearchResponse searchResponse) {
+            public void onResponse(final SearchResponse searchResponse) {
                 final List<AlertWithId> alerts = new ArrayList<>();
                 for (final SearchHit hit : searchResponse.getHits().getHits()) {
                     final AlertWithId aId = new AlertWithId();
                     aId.setId(hit.getId());
-                    aId.setAlert(convertMapToAlertData(hit.getSourceAsMap()));
+                    if (hit.getSourceAsMap() != null) {
+                        aId.setAlert(convertMapToAlertData(hit.getSourceAsMap()));
+                    }
                     alerts.add(aId);
                 }
                 callback.onComplete(alerts, null);
             }
 
             @Override
-            public void onFailure(Exception ex) {
+            public void onFailure(final Exception ex) {
                 logger.error("Fail to read the alert response from elastic search", ex);
                 callback.onComplete(null, ex);
             }
@@ -103,11 +109,11 @@ class Reader {
     }
 
     private int maxReadSize(Map<String, Object> config) {
-        return Integer.parseInt(config.getOrDefault("max.read.size", 10000).toString());
+        return Integer.parseInt(config.getOrDefault("max.read.size", DEFAULT_MAX_READ_SIZE).toString());
     }
 
     private TimeValue readTimeout(final Map<String, Object> config) {
-        final long timeout = Long.parseLong(config.getOrDefault("read.timeout.ms", 15000).toString());
+        final long timeout = Long.parseLong(config.getOrDefault("read.timeout.ms", DEFAULT_READ_TIMEOUT_MS).toString());
         return new TimeValue(timeout, TimeUnit.MILLISECONDS);
     }
 }

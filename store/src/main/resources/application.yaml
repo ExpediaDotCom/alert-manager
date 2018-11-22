@@ -12,3 +12,4 @@ kafka:
     auto.offset.reset: latest
     group.id: alert-manager-store
     enable.auto.commit: false
+health.status.file: /tmp/health.status

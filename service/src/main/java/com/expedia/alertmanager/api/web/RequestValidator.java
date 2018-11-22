@@ -59,15 +59,15 @@ public class RequestValidator {
         Assert.notNull(operand.getField(), "Operands can't be empty");
         Assert.isTrue(!StringUtils.isEmpty(operand.getField().getKey()), "Invalid operand field key");
         Assert.isTrue(!StringUtils.isEmpty(operand.getField().getValue()), "Invalid operand field value");
-        Assert.isTrue(!operand.getField().getKey().equals(QUERY_KEYWORD),
-            String.format("%s is a reserved field and can't be used as an operand field key", QUERY_KEYWORD));
-        Assert.isTrue(!operand.getField().getKey().equals(LAST_MOD_TIME_KEYWORD),
-            String.format("%s is a reserved field and can't be used as an operand field key", LAST_MOD_TIME_KEYWORD));
-        Assert.isTrue(!operand.getField().getKey().equals(CREATE_TIME_KEYWORD),
-            String.format("%s is a reserved field and can't be used as an operand field key", CREATE_TIME_KEYWORD));
-        Assert.isTrue(!operand.getField().getKey().equals(DISPATCHERS_KEYWORD),
-            String.format("%s is a reserved field and can't be used as an operand field key", DISPATCHERS_KEYWORD));
-        Assert.isTrue(!operand.getField().getKey().equals(USER_KEYWORD),
-            String.format("%s is a reserved field and can't be used as an operand field key", USER_KEYWORD));
+        assertOperandFor(operand, QUERY_KEYWORD);
+        assertOperandFor(operand, LAST_MOD_TIME_KEYWORD);
+        assertOperandFor(operand, CREATE_TIME_KEYWORD);
+        assertOperandFor(operand, DISPATCHERS_KEYWORD);
+        assertOperandFor(operand, USER_KEYWORD);
+    }
+
+    private void assertOperandFor(Operand operand, String queryKeyword) {
+        Assert.isTrue(!operand.getField().getKey().equals(queryKeyword),
+            String.format("%s is a reserved field and can't be used as an operand field key", queryKeyword));
     }
 }

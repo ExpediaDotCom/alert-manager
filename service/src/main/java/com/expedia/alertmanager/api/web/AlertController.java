@@ -41,7 +41,14 @@ public class AlertController {
         this.alertStore = alertStore;
     }
 
-    @RequestMapping(value = "/alerts", method = RequestMethod.POST)
+    /**
+     * Consider this only as a utility/testing method to push alerts into Alert Manager.
+     * Ideally all the alerts should be ingested directly into Alert Manager's kafka,
+     * as we don't want multiple ingestion points.
+     * @param alerts
+     * @return ResponseEntity
+     */
+    @RequestMapping(value = "/test-alerts", method = RequestMethod.POST)
     public ResponseEntity saveAlerts(@RequestBody List<Alert> alerts) {
         alertStore.saveAlerts(alerts);
         return new ResponseEntity(HttpStatus.OK);

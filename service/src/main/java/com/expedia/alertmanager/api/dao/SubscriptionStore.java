@@ -22,6 +22,7 @@ import static com.expedia.alertmanager.api.model.SubscriptionEntity.QUERY_KEYWOR
 import static com.expedia.alertmanager.api.model.SubscriptionEntity.USER_KEYWORD;
 import static com.expedia.alertmanager.api.model.SubscriptionEntity.USER_ID_KEYWORD;
 import com.expedia.alertmanager.api.util.QueryUtil;
+import com.expedia.alertmanager.model.BaseSubscription;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.ExpressionTree;
 import com.expedia.alertmanager.model.SubscriptionResponse;
@@ -100,9 +101,9 @@ public class SubscriptionStore {
         }
         JestClient client = clientFactory.getObject();
         try {
-            JestResult result = client.execute(bulkIndexBuilder.build());
+            BulkResult result = client.execute(bulkIndexBuilder.build());
             validateResponseStatus(result);
-            return ((BulkResult) result).getItems().stream()
+            return result.getItems().stream()
                 .map(item -> item.id).collect(Collectors.toList());
         } catch (IOException e) {
             log.error("Store subscriptions failed", e);
@@ -119,10 +120,10 @@ public class SubscriptionStore {
             .index(elasticSearchConfig.getIndexName()).type(elasticSearchConfig.getDocType()).build();
     }
 
-    private Set<String> getFields(List<CreateSubscriptionRequest> createSubRqs) {
+    private Set<String> getFields(List<? extends BaseSubscription> subRqs) {
         Set<String> fields = new HashSet<>();
-        createSubRqs.forEach(createSubRq -> {
-            fields.addAll(getFieldsPerRequest(createSubRq.getExpression()));
+        subRqs.forEach(subRq -> {
+            fields.addAll(getFieldsPerRequest(subRq.getExpression()));
         });
         return fields;
     }
@@ -133,6 +134,10 @@ public class SubscriptionStore {
     }
 
     public void updateSubscriptions(List<UpdateSubscriptionRequest> updateSubscriptionRequests) {
+        Set<String> fields = getFields(updateSubscriptionRequests);
+        Set<String> fieldsWithoutExistingMapping = getFieldsWithoutExistingMapping(fields);
+        updateIndexMappings(fieldsWithoutExistingMapping);
+
         Bulk.Builder bulkIndexBuilder = new Bulk.Builder();
         for (UpdateSubscriptionRequest rq : updateSubscriptionRequests) {
             SubscriptionResponse existingSubscription = getSubscription(rq.getId());
@@ -293,10 +298,10 @@ public class SubscriptionStore {
     private List<SubscriptionResponse> getSubscriptionResponses(JestClient client,
                                                                 SearchSourceBuilder searchSourceBuilder)
         throws IOException {
-        JestResult result = client.execute(new Search.Builder(searchSourceBuilder.toString())
+        SearchResult result = client.execute(new Search.Builder(searchSourceBuilder.toString())
             .addIndex(elasticSearchConfig.getIndexName()).addType(elasticSearchConfig.getDocType()).build());
         validateResponseStatus(result);
-        List<SearchResult.Hit<Object, Void>> hits = ((SearchResult) result).getHits(Object.class);
+        List<SearchResult.Hit<Object, Void>> hits = result.getHits(Object.class);
         return hits.stream()
             .map(hit -> getSubscriptionResponse(GSON.toJson(hit.source), hit.id))
             .collect(Collectors.toList());

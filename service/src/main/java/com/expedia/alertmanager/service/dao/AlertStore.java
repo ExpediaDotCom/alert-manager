@@ -54,26 +54,22 @@ public class AlertStore {
     }
 
     private List<Store> loadAndInitStoragePlugin(AlertStoreConfig storeConfig) throws IOException {
-        final List<Store> stores = new ArrayList<>();
+        final List<Store> stores = new ArrayList<>(storeConfig.getPlugins().size());
         for (AlertStoreConfig.PluginConfig cfg : storeConfig.getPlugins()) {
             final String pluginJarFileName = cfg.getJarName().toLowerCase();
 
-            final URL[] urls = new URL[1];
             File pluginDir = new File(storeConfig.getPluginDirectory());
             File[] plugins = pluginDir.listFiles(file -> file.getName().toLowerCase().equals(pluginJarFileName));
 
-            if (plugins == null || plugins.length == 0) {
+            if (plugins == null || plugins.length != 1) {
                 throw new RuntimeException(
                         String.format("Fail to find the plugin with jarName=%s in the directory=%s",
                                 pluginJarFileName,
                                 storeConfig.getPluginDirectory()));
             }
 
-            for (int i = 0; i < plugins.length; i++) {
-                urls[i] = plugins[i].toURI().toURL();
-            }
-
-            final URLClassLoader ucl = new URLClassLoader(urls);
+            final URL[] urls = new URL[] { plugins[0].toURI().toURL() };
+            final URLClassLoader ucl = new URLClassLoader(urls, Store.class.getClassLoader());
             final ServiceLoader<Store> loader = ServiceLoader.load(Store.class, ucl);
 
             // load and initialize the plugin

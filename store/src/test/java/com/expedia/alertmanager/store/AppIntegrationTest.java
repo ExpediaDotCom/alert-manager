@@ -16,6 +16,9 @@
 
 package com.expedia.alertmanager.store;
 
+import com.expedia.alertmanager.model.Alert;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -39,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -52,7 +56,7 @@ public class AppIntegrationTest {
                 "   name: \"elasticsearch\"\n" +
                 "   jar.name: \"elasticsearch-store.jar\"\n" +
                 "   conf:\n" +
-                "    hostname: http://elasticsearch:9200\n" +
+                "    host: http://elasticsearch:9200\n" +
                 "kafka:\n" +
                 "  topic: alerts\n" +
                 "  stream.threads: 2\n" +
@@ -111,21 +115,21 @@ public class AppIntegrationTest {
             Assert.assertTrue("timestamp should be truncated to seconds",
                     Long.parseLong(alert.get("startTime").toString()) % 1000 == 0);
             Assert.assertEquals(((Map<String, String>) alert.get("labels")).get("service"), svc);
+            Assert.assertEquals(((Map<String, String>) alert.get("annotations")).get("annotated_key"), "annotated_value");
         }
     }
 
-    private void produceAlertsInKakfa() {
+    private void produceAlertsInKakfa() throws JsonProcessingException {
         final Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafkasvc:9092");
         final KafkaProducer<String, byte[]> producer = new KafkaProducer<>(props, new StringSerializer(), new ByteArraySerializer());
 
-        final long currentTime = System.currentTimeMillis();
-        final String alert_1 = "{\"name\":\"a1\",\"labels\":{\"service\": \"svc1\"},\"annotations\":null,\"observedValue\":\"5\",\"expectedValue\":\"10\",\"startTime\":" + currentTime + ",\"generatorURL\":null}";
-        final String alert_2 = "{\"name\":\"a1\",\"labels\":{\"service\": \"svc2\"},\"annotations\":null,\"observedValue\":\"5\",\"expectedValue\":\"10\",\"startTime\":" + currentTime + ",\"generatorURL\":null}";
+        final String svc1Alert = createAlert("svc1");
+        final String svc2Alert = createAlert("svc2");
 
-        Arrays.asList(alert_1, alert_2).forEach(r -> {
+        Arrays.asList(svc1Alert, svc2Alert).forEach(alert -> {
             try {
-                producer.send(new ProducerRecord<>("alerts", "k1", r.getBytes("utf-8")), (recordMetadata, e) -> {
+                producer.send(new ProducerRecord<>("alerts", "k1", alert.getBytes("utf-8")), (recordMetadata, e) -> {
                     if (e != null) {
                         Assert.fail("Fail to produce the message to kafka with error message " + e.getMessage());
                     }
@@ -137,5 +141,21 @@ public class AppIntegrationTest {
         });
 
         producer.flush();
+    }
+
+    private String createAlert(final String serviceName) throws JsonProcessingException {
+        final Alert alert = new Alert();
+        alert.setName("a1");
+        alert.setStartTime(System.currentTimeMillis());
+        alert.setObservedValue("5");
+        alert.setExpectedValue("10");
+
+        final Map<String, String> labels = Collections.singletonMap("service", serviceName);
+        alert.setLabels(labels);
+
+        final Map<String, String> annotations = Collections.singletonMap("annotated_key", "annotated_value");
+        alert.setAnnotations(annotations);
+
+        return new ObjectMapper().writeValueAsString(alert);
     }
 }

@@ -32,9 +32,9 @@ class Writer {
     private final long retryBackOffMillis;
 
     Writer(final RestHighLevelClient client,
-                  final Map<String, Object> config, 
-                  final String indexNamePrefix, 
-                  final Logger logger) {
+           final Map<String, Object> config,
+           final String indexNamePrefix,
+           final Logger logger) {
         this.client = client;
         this.indexNamePrefix = indexNamePrefix;
         this.logger = logger;
@@ -42,17 +42,21 @@ class Writer {
         this.retryBackOffMillis = Long.parseLong(config.getOrDefault("retry.backoff.ms", DEFAULT_RETRY_BACKOFF_MS).toString());
     }
 
-    void write(List<AlertWithId> alerts, WriteCallback callback) throws IOException {
+    void write(List<AlertWithId> alerts, WriteCallback callback) {
         final BulkRequest bulkRequest = new BulkRequest();
         final SimpleDateFormat formatter = new SimpleDateFormat(INDEX_NAME_DATE_PATTERN);
-        for (final AlertWithId alertWrapper : alerts) {
-            final String idxName = indexName(formatter, alertWrapper.getAlert().getStartTime());
-            final IndexRequest indexRequest = new IndexRequest(idxName, ES_INDEX_TYPE, alertWrapper.getId());
-            indexRequest.source(convertAlertToMap(alertWrapper.getAlert()));
-            bulkRequest.add(indexRequest);
-        }
 
-        this.client.bulkAsync(bulkRequest, new BulkActionListener(bulkRequest, callback, 0));
+        try {
+            for (final AlertWithId alertWrapper : alerts) {
+                final String idxName = indexName(formatter, alertWrapper.getAlert().getStartTime());
+                final IndexRequest indexRequest = new IndexRequest(idxName, ES_INDEX_TYPE, alertWrapper.getId());
+                indexRequest.source(convertAlertToMap(alertWrapper.getAlert()));
+                bulkRequest.add(indexRequest);
+                this.client.bulkAsync(bulkRequest, new BulkActionListener(bulkRequest, callback, 0));
+            }
+        } catch (IOException ex) {
+            callback.onComplete(ex);
+        }
     }
 
     final class BulkActionListener implements ActionListener<BulkResponse> {
@@ -94,6 +98,10 @@ class Writer {
                 logger.error("All retries while writing to elastic search have been exhausted");
                 callback.onComplete(e);
             }
+        }
+        // visible for testing
+        public int getRetryCount() {
+            return retryCount;
         }
     }
 

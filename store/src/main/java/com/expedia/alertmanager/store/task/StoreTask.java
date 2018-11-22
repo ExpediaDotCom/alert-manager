@@ -119,7 +119,7 @@ public class StoreTask implements Runnable, Closeable {
     /**
      * run the consumer loop till the shutdown is requested or any exception is thrown
      */
-    private void runLoop() throws InterruptedException, IOException {
+    private void runLoop() throws InterruptedException {
         while(!shutdownRequested.get()) {
             final Optional<ConsumerRecords<String, Alert>> mayBeRecords = poll();
             if (mayBeRecords.isPresent()) {

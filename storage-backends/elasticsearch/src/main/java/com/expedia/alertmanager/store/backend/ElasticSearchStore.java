@@ -49,6 +49,8 @@ public class ElasticSearchStore implements Store {
     static String OBSERVED_VALUE = "observedValue";
     static String GENERATOR_URL = "generatorURL";
 
+    private final static String DEFAULT_INDEX_PREFIX = "alerts";
+
     private final Logger logger = LoggerFactory.getLogger(ElasticSearchStore.class);
     private RestHighLevelClient client;
     private Reader reader;
@@ -59,20 +61,20 @@ public class ElasticSearchStore implements Store {
                      final long from,
                      final long to,
                      final int size,
-                     final ReadCallback callback) throws IOException {
+                     final ReadCallback callback) {
         reader.read(labels, from, to, size, callback);
     }
 
     @Override
-    public void write(final List<AlertWithId> alerts, final WriteCallback callback) throws IOException {
+    public void write(final List<AlertWithId> alerts, final WriteCallback callback) {
         writer.write(alerts, callback);
     }
 
     @Override
     public void init(final Map<String, Object> config) throws IOException {
         logger.info("Initializing elastic search store with config {}", config);
-        final String indexNamePrefix = config.getOrDefault("index.prefix", "alerts").toString();
-        final String esHost = config.getOrDefault("hostname", "http://localhost:9092").toString();
+        final String indexNamePrefix = config.getOrDefault("index.prefix", DEFAULT_INDEX_PREFIX).toString();
+        final String esHost = config.getOrDefault("host", "http://localhost:9200").toString();
         this.client = new RestHighLevelClient(RestClient.builder(HttpHost.create(esHost)));
         this.reader = new Reader(client, config, indexNamePrefix, logger);
         this.writer = new Writer(client, config, indexNamePrefix, logger);
@@ -90,16 +92,18 @@ public class ElasticSearchStore implements Store {
             reader.close();
         }
 
+        if (!template.toString().isEmpty()) {
+            logger.info("Applying indexing template {}", template);
+            final HttpEntity entity = new NStringEntity(template.toString(), ContentType.APPLICATION_JSON);
+            final Response resp = this.client.getLowLevelClient()
+                    .performRequest("PUT", "/_template/alert-store-template", new HashMap<>(), entity);
 
-        final HttpEntity entity = new NStringEntity(template.toString(), ContentType.APPLICATION_JSON);
-        final Response resp = this.client.getLowLevelClient()
-                .performRequest("PUT", "/_template/alert-store-template", new HashMap<>(), entity);
-
-        if (resp.getStatusLine() == null ||
-                (resp.getStatusLine().getStatusCode() < 200 && resp.getStatusLine().getStatusCode() >= 300)) {
-            throw new IOException(String.format("Fail to execute put template request '%s'", template.toString()));
-        } else {
-            logger.info("indexing template has been successfully applied - '{}'", template);
+            if (resp.getStatusLine() == null ||
+                    (resp.getStatusLine().getStatusCode() < 200 && resp.getStatusLine().getStatusCode() >= 300)) {
+                throw new IOException(String.format("Fail to execute put template request '%s'", template.toString()));
+            } else {
+                logger.info("indexing template has been successfully applied - '{}'", template);
+            }
         }
     }
 

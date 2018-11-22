@@ -69,6 +69,37 @@ module "alert-manager-service" {
   es_urls = "${var.alert-manager-service["es_urls"]}"
 }
 
+module "alert-manager-store" {
+  source = "alert-manager-store"
+
+  # Docker
+  image = "${var.alert-manager-store["image"]}"
+  image_pull_policy = "${var.alert-manager-store["image_pull_policy"]}"
+
+  # Kubernetes
+  namespace = "${var.app_namespace}"
+  enabled = "${var.alert-manager-store["enabled"]}"
+  replicas = "${var.alert-manager-store["instances"]}"
+  cpu_limit = "${var.alert-manager-store["cpu_limit"]}"
+  cpu_request = "${var.alert-manager-store["cpu_request"]}"
+  memory_limit = "${var.alert-manager-store["memory_limit"]}"
+  memory_request = "${var.alert-manager-store["memory_request"]}"
+  node_selector_label = "${var.node_selector_label}"
+  kubectl_executable_name = "${var.kubectl_executable_name}"
+  kubectl_context_name = "${var.kubectl_context_name}"
+
+  # Environment
+  jvm_memory_limit = "${var.alert-manager-store["jvm_memory_limit"]}"
+  graphite_hostname = "${var.graphite_hostname}"
+  graphite_port = "${var.graphite_port}"
+  graphite_enabled = "${var.graphite_enabled}"
+  env_vars = "${var.alert-manager-store["environment_overrides"]}"
+
+  # App
+  kafka_endpoint = "${local.kafka_endpoint}"
+  es_urls = "${var.alert-manager-store["es_urls"]}"
+}
+
 module "alert-manager-notifier" {
   source = "alert-manager-notifier"
 

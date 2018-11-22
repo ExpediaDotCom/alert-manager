@@ -15,7 +15,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,11 +43,15 @@ class Reader {
         this.maxSize = maxReadSize(config);
     }
 
-    void read(Map<String, String> labels, long from, long to, int size, ReadCallback callback) throws IOException {
+    void read(final Map<String, String> labels,
+              final long from,
+              final long to,
+              final int size,
+              final ReadCallback callback) {
         final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
 
         final BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        labels.forEach((key, value) -> boolQuery.must(QueryBuilders.matchQuery("labels." + key, value.toLowerCase())));
+        labels.forEach((key, value) -> boolQuery.must(QueryBuilders.matchQuery(LABELS + '.' + key, value)));
         boolQuery.must(new RangeQueryBuilder(START_TIME).gt(from).lt(to));
 
         sourceBuilder
@@ -63,19 +66,21 @@ class Reader {
 
         this.client.searchAsync(searchRequest, new ActionListener<SearchResponse>() {
             @Override
-            public void onResponse(SearchResponse searchResponse) {
+            public void onResponse(final SearchResponse searchResponse) {
                 final List<AlertWithId> alerts = new ArrayList<>();
                 for (final SearchHit hit : searchResponse.getHits().getHits()) {
                     final AlertWithId aId = new AlertWithId();
                     aId.setId(hit.getId());
-                    aId.setAlert(convertMapToAlertData(hit.getSourceAsMap()));
+                    if (hit.getSourceAsMap() != null) {
+                        aId.setAlert(convertMapToAlertData(hit.getSourceAsMap()));
+                    }
                     alerts.add(aId);
                 }
                 callback.onComplete(alerts, null);
             }
 
             @Override
-            public void onFailure(Exception ex) {
+            public void onFailure(final Exception ex) {
                 logger.error("Fail to read the alert response from elastic search", ex);
                 callback.onComplete(null, ex);
             }

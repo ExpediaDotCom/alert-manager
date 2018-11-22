@@ -23,4 +23,5 @@ alert.store:
   - name: elasticsearch
     jarName: "elasticsearch-store-1.0.0-SNAPSHOT.jar"
     conf:
-     hostname: "http://elasticsearch:9200"
+     host: "http://elasticsearch:9200"
+     template: ""

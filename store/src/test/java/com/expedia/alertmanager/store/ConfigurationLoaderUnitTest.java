@@ -40,7 +40,7 @@ public class ConfigurationLoaderUnitTest {
     @Test
     public void testConfigurationFromFile() throws IOException {
 
-        final Path configFilePath = Paths.get("/tmp/config.yaml");
+        final Path configFilePath = Paths.get("/tmp/application.yaml");
         final String config = "plugin.directory: \"storage-backends/elasticsearch\"\n" +
                 "plugin:\n" +
                 "   name: \"elasticsearch\"\n" +
@@ -55,7 +55,7 @@ public class ConfigurationLoaderUnitTest {
                 "    enable.auto.commit: false";
 
         Files.write(configFilePath, config.getBytes("utf-8"));
-        final StoreConfig cfg = ConfigurationLoader.loadConfig(new File("/tmp/config.yaml"));
+        final StoreConfig cfg = ConfigurationLoader.loadConfig(new File("/tmp/application.yaml"));
         Assert.assertEquals(cfg.getPluginDirectory(), "storage-backends/elasticsearch");
         Assert.assertEquals(cfg.getPlugin().getJarName(), "elasticsearch-store.jar");
         Assert.assertEquals(cfg.getPlugin().getName(), "elasticsearch");

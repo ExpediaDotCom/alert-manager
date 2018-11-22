@@ -3,7 +3,7 @@ plugin:
   name: "elasticsearch"
   jar.name: "elasticsearch-store.jar"
   conf:
-   hostname: "${es_urls}"
+   host: "${es_urls}"
 kafka:
   topic: alerts
   stream.threads: 4

@@ -23,4 +23,5 @@ alert.store:
   - name: elasticsearch
     jarName: "elasticsearch-store.jar"
     conf:
-     hostname: "${es_urls}"
+     host: "${es_urls}"
+     template: ""

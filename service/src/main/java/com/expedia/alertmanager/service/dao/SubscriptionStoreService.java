@@ -60,7 +60,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class SubscriptionStore {
+public class SubscriptionStoreService {
 
     private final Gson GSON = new Gson();
 

@@ -48,7 +48,7 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class SubscriptionStoreTests {
+public class SubscriptionStoreServiceTests {
 
     @Mock
     private JestClient client;
@@ -60,7 +60,7 @@ public class SubscriptionStoreTests {
     private ElasticSearchConfig elasticSearchConfig;
 
     @Autowired
-    private SubscriptionStore subscriptionStore;
+    private SubscriptionStoreService subscriptionStore;
 
     //TODO - remove this dependency if we can resolve bean loading issue with AlertStore in a better way
     @MockBean

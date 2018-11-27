@@ -16,7 +16,7 @@
 
 package com.expedia.alertmanager.store;
 
-import com.expedia.alertmanager.model.store.Store;
+import com.expedia.alertmanager.model.store.AlertStore;
 import com.expedia.alertmanager.store.config.KafkaConfig;
 import com.expedia.alertmanager.store.task.StoreTask;
 import com.expedia.alertmanager.store.task.TaskStateListener;
@@ -35,14 +35,14 @@ class AlertStoreController implements TaskStateListener, Closeable {
     private final static Logger LOGGER = LoggerFactory.getLogger(AlertStoreController.class);
 
     private final KafkaConfig config;
-    private final Store store;
+    private final AlertStore store;
     private final ExecutorService streamThreadExecutor;
     private final AtomicBoolean isStarted = new AtomicBoolean(false);
     private final HealthController healthController;
     private List<StoreTask> tasks = new ArrayList<>();
 
     AlertStoreController(final KafkaConfig config,
-                         final Store store,
+                         final AlertStore store,
                          final HealthController healthController) {
         this.config = config;
         this.store = store;

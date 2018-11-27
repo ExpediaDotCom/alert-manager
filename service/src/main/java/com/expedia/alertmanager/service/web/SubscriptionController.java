@@ -15,7 +15,7 @@
  */
 package com.expedia.alertmanager.service.web;
 
-import com.expedia.alertmanager.service.dao.SubscriptionStore;
+import com.expedia.alertmanager.service.dao.SubscriptionStoreService;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.SearchSubscriptionRequest;
 import com.expedia.alertmanager.model.SubscriptionResponse;
@@ -38,7 +38,7 @@ import java.util.List;
 public class SubscriptionController {
 
     @Autowired
-    private SubscriptionStore subscriptionStore;
+    private SubscriptionStoreService subscriptionStore;
 
     @Autowired
     private RequestValidator requestValidator;

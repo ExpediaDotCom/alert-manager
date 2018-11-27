@@ -17,9 +17,8 @@
 package com.expedia.alertmanager.store.task;
 
 import com.expedia.alertmanager.model.Alert;
+import com.expedia.alertmanager.model.store.AlertStore;
 import com.expedia.alertmanager.model.store.AlertWithId;
-import com.expedia.alertmanager.model.store.Store;
-import com.expedia.alertmanager.model.store.WriteCallback;
 import com.expedia.alertmanager.store.config.KafkaConfig;
 import com.expedia.alertmanager.store.serde.AlertDeserializer;
 import org.apache.kafka.clients.consumer.*;
@@ -30,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,17 +38,17 @@ public class StoreTask implements Runnable, Closeable {
 
     private final int taskId;
     private final KafkaConfig cfg;
-    private final Store store;
+    private final AlertStore store;
 
     private final KafkaConsumer<String, Alert> consumer;
     private final ScheduledExecutorService wakeupScheduler;
     private final AtomicBoolean shutdownRequested;
-    private final ArrayBlockingQueue<StoreWriteCallback> requestedCallbacks;
+    private final Queue<StoreWriteCallback> callbacks;
+    private final Semaphore parallelWrites;
     private int wakeups = 0;
     private List<TaskStateListener> stateListeners;
     private TaskStateListener.State state;
     private long lastCommitTime;
-    private volatile Map<TopicPartition, OffsetAndMetadata> committableOffsets = Collections.emptyMap();
 
     private class RebalanceListener implements ConsumerRebalanceListener {
         /**
@@ -73,7 +71,7 @@ public class StoreTask implements Runnable, Closeable {
 
     public StoreTask(final int taskId,
                      final KafkaConfig cfg,
-                     final Store store,
+                     final AlertStore store,
                      final int parallelWrites) throws InterruptedException {
         this.taskId = taskId;
         this.cfg = cfg;
@@ -83,7 +81,8 @@ public class StoreTask implements Runnable, Closeable {
         this.shutdownRequested = new AtomicBoolean(false);
         this.state = TaskStateListener.State.NOT_RUNNING;
         this.lastCommitTime = System.currentTimeMillis();
-        this.requestedCallbacks = new ArrayBlockingQueue<>(parallelWrites);
+        this.callbacks = new LinkedList<>();
+        this.parallelWrites = new Semaphore(parallelWrites);
 
         this.consumer = createConsumer(taskId, cfg);
         consumer.subscribe(Collections.singletonList(cfg.getTopic()), new RebalanceListener());
@@ -133,18 +132,34 @@ public class StoreTask implements Runnable, Closeable {
                 }
 
                 final StoreWriteCallback callback = new StoreWriteCallback(offsets);
-                synchronized (requestedCallbacks) {
-                    requestedCallbacks.put(callback);
-                }
-                store.write(saveAlerts, callback);
+                // see if the execution is permitted as per parallel writes semaphore
+                parallelWrites.acquire();
 
+                Map<TopicPartition, OffsetAndMetadata> committableOffsets = Collections.emptyMap();
+
+                // find the offset that needs to be committed
+                synchronized (callbacks) {
+                    while (true) {
+                        final StoreWriteCallback cbk = callbacks.peek();
+                        if (cbk != null && cbk.callbackReceived) {
+                            // remove the completed callback from the queue
+                            committableOffsets = callbacks.poll().offsets;
+                        } else {
+                            break;
+                        }
+                    }
+                    callbacks.add(callback);
+                }
+
+                store.write(saveAlerts, callback);
                 // commit offsets
+
                 commit(committableOffsets, 0);
             }
         }
     }
 
-    private class StoreWriteCallback implements WriteCallback {
+    private class StoreWriteCallback implements AlertStore.WriteCallback {
         private final Map<TopicPartition, OffsetAndMetadata> offsets;
         private volatile boolean callbackReceived = false;
 
@@ -153,35 +168,25 @@ public class StoreTask implements Runnable, Closeable {
         }
 
         @Override
-        public void onComplete(Exception ex) {
-            if (ex != null) {
+        public void onComplete(final Exception ex) {
+            if (ex == null) {
+                // commit offsets
+                synchronized (callbacks) {
+                    for (final StoreWriteCallback cbk : callbacks) {
+                        if (cbk == this) {
+                            cbk.callbackReceived = true;
+                            parallelWrites.release();
+                        }
+                    }
+                }
+            } else {
                 // dont commit anything if exception happens
                 LOGGER.error("Fail to write to elastic search after all retries with error", ex);
                 updateStateAndNotify(TaskStateListener.State.FAILED);
-            } else {
-                // commit offsets
-                synchronized (requestedCallbacks) {
-                    StoreWriteCallback committableCallback = null;
-                    for (final StoreWriteCallback cbk : requestedCallbacks) {
-                        if (cbk == this) {
-                            cbk.callbackReceived = true;
-                        }
-                    }
-                    while(true) {
-                        final StoreWriteCallback cbk = requestedCallbacks.peek();
-                        if (cbk != null && cbk.callbackReceived) {
-                            committableCallback = requestedCallbacks.poll();
-                        } else {
-                            break;
-                        }
-                    }
-                    if (committableCallback != null) {
-                        committableOffsets = committableCallback.offsets;
-                    }
-                }
             }
         }
     }
+
     private void updateOffset(final Map<TopicPartition, OffsetAndMetadata> committableOffsets,
                                          final ConsumerRecord<String, Alert> record) {
         final TopicPartition topicPartition = new TopicPartition(record.topic(), record.partition());

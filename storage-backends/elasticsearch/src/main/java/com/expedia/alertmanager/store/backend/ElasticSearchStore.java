@@ -16,10 +16,8 @@
 
 package com.expedia.alertmanager.store.backend;
 
+import com.expedia.alertmanager.model.store.AlertStore;
 import com.expedia.alertmanager.model.store.AlertWithId;
-import com.expedia.alertmanager.model.store.ReadCallback;
-import com.expedia.alertmanager.model.store.Store;
-import com.expedia.alertmanager.model.store.WriteCallback;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
@@ -38,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ElasticSearchStore implements Store {
+public class ElasticSearchStore implements AlertStore {
     final static String ES_INDEX_TYPE = "alerts";
 
     static String NAME = "name";

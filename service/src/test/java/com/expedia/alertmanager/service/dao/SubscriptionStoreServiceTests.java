@@ -15,23 +15,13 @@
  */
 package com.expedia.alertmanager.service.dao;
 
+import com.expedia.alertmanager.model.*;
 import com.expedia.alertmanager.service.conf.ElasticSearchConfig;
-import com.expedia.alertmanager.model.CreateSubscriptionRequest;
-import com.expedia.alertmanager.model.Dispatcher;
-import com.expedia.alertmanager.model.ExpressionTree;
-import com.expedia.alertmanager.model.Operator;
-import com.expedia.alertmanager.model.SubscriptionResponse;
-import com.expedia.alertmanager.model.UpdateSubscriptionRequest;
 import com.google.gson.Gson;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
-import io.searchbox.core.Bulk;
-import io.searchbox.core.BulkResult;
-import io.searchbox.core.DocumentResult;
-import io.searchbox.core.Get;
-import io.searchbox.core.Search;
-import io.searchbox.core.SearchResult;
+import io.searchbox.core.*;
 import io.searchbox.indices.mapping.GetMapping;
 import io.searchbox.indices.mapping.PutMapping;
 import org.junit.Test;
@@ -47,10 +37,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.expedia.alertmanager.service.web.TestUtil.dispatcher;
-import static com.expedia.alertmanager.service.web.TestUtil.operand;
-import static com.expedia.alertmanager.service.web.TestUtil.user;
 import static com.expedia.alertmanager.model.Dispatcher.Type.EMAIL;
+import static com.expedia.alertmanager.service.web.TestUtil.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -60,7 +48,7 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class SubscriptionStoreTests {
+public class SubscriptionStoreServiceTests {
 
     @Mock
     private JestClient client;
@@ -72,11 +60,11 @@ public class SubscriptionStoreTests {
     private ElasticSearchConfig elasticSearchConfig;
 
     @Autowired
-    private SubscriptionStore subscriptionStore;
+    private SubscriptionStoreService subscriptionStore;
 
     //TODO - remove this dependency if we can resolve bean loading issue with AlertStore in a better way
     @MockBean
-    private AlertStore alertStore;
+    private AlertStoreService alertStore;
 
     @Test
     public void givenValidCreateSubscriptionRequest_shouldCreateSubscriptions() throws IOException {

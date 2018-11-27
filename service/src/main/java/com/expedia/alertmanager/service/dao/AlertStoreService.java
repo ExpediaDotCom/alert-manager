@@ -15,10 +15,10 @@
  */
 package com.expedia.alertmanager.service.dao;
 
+import com.expedia.alertmanager.model.Alert;
+import com.expedia.alertmanager.model.store.AlertStore;
 import com.expedia.alertmanager.service.conf.AlertStoreConfig;
 import com.expedia.alertmanager.service.conf.KafkaConfig;
-import com.expedia.alertmanager.model.Alert;
-import com.expedia.alertmanager.model.store.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,15 +37,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
-public class AlertStore {
-    private final static Logger LOGGER = LoggerFactory.getLogger(AlertStore.class);
+public class AlertStoreService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(AlertStoreService.class);
 
-    private final List<Store> stores;
+    private final List<AlertStore> stores;
     private KafkaTemplate<String, Alert> kafkaTemplate;
     private final String topic;
 
     @Autowired
-    public AlertStore(final KafkaConfig kafkaConfig,
+    public AlertStoreService(final KafkaConfig kafkaConfig,
                       final KafkaTemplate<String, Alert> kafkaTemplate,
                       final AlertStoreConfig alertStoreConfig) throws IOException {
         this.kafkaTemplate = kafkaTemplate;
@@ -53,8 +53,8 @@ public class AlertStore {
         this.stores = loadAndInitStoragePlugin(alertStoreConfig);
     }
 
-    private List<Store> loadAndInitStoragePlugin(AlertStoreConfig storeConfig) throws IOException {
-        final List<Store> stores = new ArrayList<>(storeConfig.getPlugins().size());
+    private List<AlertStore> loadAndInitStoragePlugin(AlertStoreConfig storeConfig) throws IOException {
+        final List<AlertStore> stores = new ArrayList<>(storeConfig.getPlugins().size());
         for (AlertStoreConfig.PluginConfig cfg : storeConfig.getPlugins()) {
             final String pluginJarFileName = cfg.getJarName().toLowerCase();
 
@@ -69,11 +69,11 @@ public class AlertStore {
             }
 
             final URL[] urls = new URL[] { plugins[0].toURI().toURL() };
-            final URLClassLoader ucl = new URLClassLoader(urls, Store.class.getClassLoader());
-            final ServiceLoader<Store> loader = ServiceLoader.load(Store.class, ucl);
+            final URLClassLoader ucl = new URLClassLoader(urls, AlertStore.class.getClassLoader());
+            final ServiceLoader<AlertStore> loader = ServiceLoader.load(AlertStore.class, ucl);
 
             // load and initialize the plugin
-            final Store store = loader.iterator().next();
+            final AlertStore store = loader.iterator().next();
             store.init(cfg.getConf());
             stores.add(store);
         }
@@ -93,7 +93,7 @@ public class AlertStore {
         final List<Alert> alerts = new ArrayList<>();
         final AtomicInteger waitForStores = new AtomicInteger(stores.size());
 
-        for (final Store store : stores) {
+        for (final AlertStore store : stores) {
             store.read(labels, from, to, size, (receivedAlerts, ex) -> {
                 synchronized (alerts) {
                     if (ex == null) {

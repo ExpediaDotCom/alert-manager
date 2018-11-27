@@ -16,7 +16,7 @@
 
 package com.expedia.alertmanager.store;
 
-import com.expedia.alertmanager.model.store.Store;
+import com.expedia.alertmanager.model.store.AlertStore;
 import com.expedia.alertmanager.store.config.ConfigurationLoader;
 import com.expedia.alertmanager.store.config.StoreConfig;
 import org.slf4j.Logger;
@@ -34,7 +34,7 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         final StoreConfig cfg = loadConfig(args);
-        final Store store = loadAndInitializePlugin(cfg);
+        final AlertStore store = loadAndInitializePlugin(cfg);
         final AlertStoreController pipeline =
                 new AlertStoreController(cfg.getKafka(), store, new HealthController(cfg.getHealthStatusFile()));
         pipeline.start();
@@ -54,7 +54,7 @@ public class App {
         return ConfigurationLoader.loadConfig(configFile);
     }
 
-    private static Store loadAndInitializePlugin(final StoreConfig cfg) throws Exception {
+    private static AlertStore loadAndInitializePlugin(final StoreConfig cfg) throws Exception {
         final String pluginName = cfg.getPlugin().getName();
         final String pluginJarFileName = cfg.getPlugin().getJarName().toLowerCase();
 
@@ -72,10 +72,10 @@ public class App {
 
         final URL[] urls = new URL[] { plugins[0].toURI().toURL() };
         final URLClassLoader ucl = new URLClassLoader(urls);
-        final ServiceLoader<Store> loader = ServiceLoader.load(Store.class, ucl);
+        final ServiceLoader<AlertStore> loader = ServiceLoader.load(AlertStore.class, ucl);
 
         // load and initialize the plugin
-        final Store store = loader.iterator().next();
+        final AlertStore store = loader.iterator().next();
         store.init(cfg.getPlugin().getConf());
 
         LOGGER.info("Store plugin with name={} has been successfully loaded", pluginName);

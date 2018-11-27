@@ -15,7 +15,7 @@
  */
 package com.expedia.alertmanager.service.web;
 
-import com.expedia.alertmanager.service.dao.SubscriptionStore;
+import com.expedia.alertmanager.service.dao.SubscriptionStoreService;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.ExpressionTree;
@@ -64,7 +64,7 @@ public class SubscriptionControllerTests {
     private MockMvc mvc;
 
     @MockBean
-    private SubscriptionStore subscriptionStore;
+    private SubscriptionStoreService subscriptionStore;
 
     @MockBean
     private RequestValidator requestValidator;

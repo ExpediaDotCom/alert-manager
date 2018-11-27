@@ -2,7 +2,6 @@ package com.expedia.alertmanager.store.backend;
 
 import com.expedia.alertmanager.model.Alert;
 import com.expedia.alertmanager.model.store.AlertWithId;
-import com.expedia.alertmanager.model.store.WriteCallback;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -42,7 +41,7 @@ class Writer {
         this.retryBackOffMillis = Long.parseLong(config.getOrDefault("retry.backoff.ms", DEFAULT_RETRY_BACKOFF_MS).toString());
     }
 
-    void write(List<AlertWithId> alerts, WriteCallback callback) {
+    void write(final List<AlertWithId> alerts, final WriteCallback callback) {
         final BulkRequest bulkRequest = new BulkRequest();
         final SimpleDateFormat formatter = new SimpleDateFormat(INDEX_NAME_DATE_PATTERN);
 

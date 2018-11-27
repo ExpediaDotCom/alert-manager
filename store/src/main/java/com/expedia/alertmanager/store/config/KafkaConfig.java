@@ -38,7 +38,7 @@ public class KafkaConfig {
     private int maxWakeups = 10;
 
     @JsonProperty("wakeup.timeout.ms")
-    private long wakeupTimeoutInMillis = 3000;
+    private long wakeupTimeoutInMillis = 5000;
 
     @JsonProperty("max.commit.retries")
     private int maxCommitRetries = 3;

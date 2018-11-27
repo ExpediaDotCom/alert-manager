@@ -15,10 +15,10 @@
  */
 package com.expedia.alertmanager.service.web;
 
-import com.expedia.alertmanager.service.dao.AlertStore;
 import com.expedia.alertmanager.model.Alert;
 import com.expedia.alertmanager.model.SearchAlertsRequest;
 import com.expedia.alertmanager.model.SearchAlertsResponse;
+import com.expedia.alertmanager.service.dao.AlertStoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,10 +34,10 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 public class AlertController {
 
-    private final AlertStore alertStore;
+    private final AlertStoreService alertStore;
 
     @Autowired
-    public AlertController(AlertStore alertStore) {
+    public AlertController(AlertStoreService alertStore) {
         this.alertStore = alertStore;
     }
 

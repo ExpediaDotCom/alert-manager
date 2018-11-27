@@ -20,7 +20,15 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public interface Store {
+public interface AlertStore {
+    public interface ReadCallback {
+        void onComplete(final List<AlertWithId> alerts, Exception ex);
+    }
+
+    public interface WriteCallback {
+        void onComplete(Exception ex);
+    }
+
     void read(final Map<String, String> labels, long from, long to, int size, ReadCallback callback);
     void write(final List<AlertWithId> alerts, WriteCallback callback);
     void init(Map<String, Object> config) throws IOException;

@@ -2,7 +2,6 @@ package com.expedia.alertmanager.store.backend;
 
 import com.expedia.alertmanager.model.Alert;
 import com.expedia.alertmanager.model.store.AlertWithId;
-import com.expedia.alertmanager.model.store.ReadCallback;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;

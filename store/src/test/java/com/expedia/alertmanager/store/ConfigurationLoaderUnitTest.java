@@ -66,7 +66,7 @@ public class ConfigurationLoaderUnitTest {
         Assert.assertEquals(cfg.getKafka().getConsumer().get(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG), "latest");
         Assert.assertEquals(cfg.getKafka().getConsumer().get(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG), false);
         Assert.assertEquals(cfg.getKafka().getMaxWakeups(), 10);
-        Assert.assertEquals(cfg.getKafka().getWakeupTimeoutInMillis(), 3000);
+        Assert.assertEquals(cfg.getKafka().getWakeupTimeoutInMillis(), 5000);
         Assert.assertEquals(cfg.getKafka().getPollTimeoutMillis(), 2000);
         Files.delete(configFilePath);
     }

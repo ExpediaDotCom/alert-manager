@@ -29,22 +29,20 @@ import java.util.Map;
 
 @Component
 @Slf4j
-public class EmailComposer {
+public class MessageComposer {
 
     @Autowired
     @Qualifier("freemarkerConfig")
     private Configuration freemarkerConfig;
 
-    public String buildContent(Alert alert) {
+    public String buildContent(Alert alert, String templateName) {
         try {
-            //TODO - we need to parameterize the email template
-            Template template = freemarkerConfig.getTemplate("email-template.ftl");
+            Template template = freemarkerConfig.getTemplate(templateName);
             Map<String, Object> input = new HashMap();
             input.put( "alert", alert );
-            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, input);
-            return html;
+            return FreeMarkerTemplateUtils.processTemplateIntoString(template, input);
         } catch (Exception e) {
-            log.error("Exception generating email content", e);
+            log.error("Exception generating content", e);
             throw new RuntimeException(e);
         }
     }

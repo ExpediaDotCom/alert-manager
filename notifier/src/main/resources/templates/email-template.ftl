@@ -31,7 +31,9 @@ Hello!
     </#if>
 </p>
 
+<#if alert.generatorURL?has_content>
 <p>More details on alert can be accessed from <a href="${alert.generatorURL}">here</a></p>
+</#if>
 
 <p>You can access alert subscription rules from the <a href="">console</a>.</p>
 

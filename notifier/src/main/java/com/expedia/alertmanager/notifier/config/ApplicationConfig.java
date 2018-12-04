@@ -104,4 +104,18 @@ public class ApplicationConfig {
         bean.setTemplateLoaderPath("classpath:/templates/");
         return bean;
     }
+
+    @Value("${slack.url}")
+    private String slackUrl;
+
+    public String getSlackUrl() {
+        return slackUrl;
+    }
+
+    @Value("${slack.token}")
+    private String slackToken;
+
+    public String getSlackToken() {
+        return slackToken;
+    }
 }

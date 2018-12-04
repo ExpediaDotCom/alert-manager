@@ -25,7 +25,7 @@ import com.amazonaws.services.simpleemail.model.Message;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendEmailResult;
 import com.expedia.alertmanager.model.Alert;
-import com.expedia.alertmanager.notifier.builder.EmailComposer;
+import com.expedia.alertmanager.notifier.builder.MessageComposer;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,9 +34,9 @@ public class AwsSesNotifier implements Notifier {
     private final String EMAIL_DELIMITER = ",";
     private final String from;
     private final String to;
-    private EmailComposer emailComposer;
+    private MessageComposer emailComposer;
 
-    public AwsSesNotifier(EmailComposer emailComposer, String from, String to) {
+    public AwsSesNotifier(MessageComposer emailComposer, String from, String to) {
         this.emailComposer = emailComposer;
         this.from = from;
         this.to = to;
@@ -55,7 +55,7 @@ public class AwsSesNotifier implements Notifier {
                 .withMessage(new Message()
                     .withBody(new Body()
                         .withHtml(new Content()
-                            .withCharset("UTF-8").withData(emailComposer.buildContent(alert))))
+                            .withCharset("UTF-8").withData(emailComposer.buildContent(alert, "email-template.ftl"))))
                     .withSubject(new Content()
                         .withCharset("UTF-8").withData("[Alert Manager Alert] You have an Alert :" + alert.getName())))
                 .withSource(from);

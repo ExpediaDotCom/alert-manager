@@ -16,10 +16,11 @@
 package com.expedia.alertmanager.notifier.action;
 
 import com.expedia.alertmanager.model.Dispatcher;
-import com.expedia.alertmanager.notifier.builder.EmailComposer;
+import com.expedia.alertmanager.notifier.builder.MessageComposer;
 import com.expedia.alertmanager.notifier.config.ApplicationConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class NotifierFactory {
@@ -28,12 +29,18 @@ public class NotifierFactory {
     private ApplicationConfig applicationConfig;
 
     @Autowired
-    private EmailComposer emailComposer;
+    private MessageComposer messageComposer;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     public Notifier getNotifier(Dispatcher dispatcher) {
         switch (dispatcher.getType()) {
             case EMAIL:
-                return new AwsSesNotifier(emailComposer, applicationConfig.getFromEmail(), dispatcher.getEndpoint());
+                return new AwsSesNotifier(messageComposer, applicationConfig.getFromEmail(), dispatcher.getEndpoint());
+            case SLACK:
+                return new SlackNotifier(restTemplate, messageComposer, applicationConfig.getSlackUrl(),
+                    applicationConfig.getSlackToken(), dispatcher.getEndpoint());
             default:
                 throw new RuntimeException("Dispatcher type:" + dispatcher.getType() + "is not supported");
         }

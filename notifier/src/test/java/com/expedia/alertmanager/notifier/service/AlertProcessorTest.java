@@ -55,17 +55,20 @@ public class AlertProcessorTest {
 
     @Test
     public void whenAnAlertIsReceived_shouldInvokeTheCorrespondingNotifier() {
-        Dispatcher dispatcher = new Dispatcher();
-        dispatcher.setType(Dispatcher.Type.EMAIL);
-        dispatcher.setEndpoint("email@email.com");
+        Dispatcher emailDispatcher = new Dispatcher();
+        emailDispatcher.setType(Dispatcher.Type.EMAIL);
+        emailDispatcher.setEndpoint("email@email.com");
+        Dispatcher slackDispatcher = new Dispatcher();
+        emailDispatcher.setType(Dispatcher.Type.SLACK);
+        emailDispatcher.setEndpoint("#channel");
         SubscriptionResponse subscriptionResponse = new SubscriptionResponse();
-        subscriptionResponse.setDispatchers(Arrays.asList(dispatcher));
+        subscriptionResponse.setDispatchers(Arrays.asList(emailDispatcher, slackDispatcher));
         given(subscriptionService.getSubscriptions(anyMap())).willReturn(Arrays.asList(subscriptionResponse));
-        given(notifierFactory.getNotifier(dispatcher)).willReturn(notifier);
-        Notifier nt = notifierFactory.getNotifier(dispatcher);
+        given(notifierFactory.getNotifier(emailDispatcher)).willReturn(notifier);
+        given(notifierFactory.getNotifier(slackDispatcher)).willReturn(notifier);
         Alert alert = new Alert();
         alert.setLabels(Collections.emptyMap());
         alertProcessor.receive(alert);
-        verify(notifier, times(1)).notify(alert);
+        verify(notifier, times(2)).notify(alert);
     }
 }

@@ -13,3 +13,7 @@ subscription-search:
 
 mail:
   from: ${mail_from}
+
+slack:
+  url: https://slack.com/api/chat.postMessage
+  token: $${SLACK_TOKEN}

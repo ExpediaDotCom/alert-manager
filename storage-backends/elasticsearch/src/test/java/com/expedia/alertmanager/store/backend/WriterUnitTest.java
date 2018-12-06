@@ -142,10 +142,9 @@ public class WriterUnitTest {
 
         final Map<String, Object> indexBody = request.sourceAsMap();
         Assert.assertEquals("name should match", indexBody.get(ElasticSearchStore.NAME), "a1");
-        Assert.assertEquals("name should match", indexBody.get(ElasticSearchStore.OBSERVED_VALUE), "5");
-        Assert.assertEquals("name should match", indexBody.get(ElasticSearchStore.EXPECTED_VALUE), "10");
         Assert.assertEquals("name should match", ((Map<String, String>)indexBody.get(ElasticSearchStore.LABELS)).get("service"), "svc1");
-        Assert.assertEquals("name should match", ((Map<String, String>)indexBody.get(ElasticSearchStore.ANNOTATIONS)).get("annotated_key"), "annotated_value");
+        Assert.assertEquals("name should match", ((Map<String, String>)indexBody.get(ElasticSearchStore.ANNOTATIONS)).get(ElasticSearchStore.OBSERVED_VALUE), "5");
+        Assert.assertEquals("name should match", ((Map<String, String>)indexBody.get(ElasticSearchStore.ANNOTATIONS)).get(ElasticSearchStore.EXPECTED_VALUE), "10");
     }
 
     private String expectedIndexName() {
@@ -155,14 +154,14 @@ public class WriterUnitTest {
     private AlertWithId createAlertWithId() {
         final Alert alert = new Alert();
         alert.setName("a1");
-        alert.setStartTime(System.currentTimeMillis());
-        alert.setObservedValue("5");
-        alert.setExpectedValue("10");
+        alert.setCreationTime(System.currentTimeMillis());
 
         final Map<String, String> labels = Collections.singletonMap("service", "svc1");
         alert.setLabels(labels);
 
-        final Map<String, String> annotations = Collections.singletonMap("annotated_key", "annotated_value");
+        final Map<String, String> annotations = new HashMap<>();
+        annotations.put("observedValue", "5");
+        annotations.put("expectedValue", "10");
         alert.setAnnotations(annotations);
 
         AlertWithId aId = new AlertWithId();

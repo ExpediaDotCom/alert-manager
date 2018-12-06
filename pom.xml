@@ -58,7 +58,7 @@
         <aws.sdk.version>1.11.126</aws.sdk.version>
         <ognl.version>3.2.6</ognl.version>
         <freemarker.version>2.3.28</freemarker.version>
-        <kafka-version>1.1.1</kafka-version>
+        <kafka-version>2.0.0</kafka-version>
         <scala.major.version>2</scala.major.version>
         <scala.minor.version>12</scala.minor.version>
         <scala.tiny.version>5</scala.tiny.version>
@@ -151,11 +151,6 @@
             </dependency>
 
             <!-- aws -->
-            <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk</artifactId>
-                <version>${aws.sdk.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-ses</artifactId>

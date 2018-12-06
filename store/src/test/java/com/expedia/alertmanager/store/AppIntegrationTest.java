@@ -109,13 +109,12 @@ public class AppIntegrationTest {
             final SearchResponse response = client.search(searchRequest);
             Assert.assertEquals(response.getHits().getHits().length, 1);
             final Map<String, Object> alert = response.getHits().getHits()[0].getSourceAsMap();
-            Assert.assertEquals(alert.get("name"), "a1");
-            Assert.assertEquals(alert.get("observedValue"), "5");
-            Assert.assertEquals(alert.get("expectedValue"), "10");
+            Assert.assertEquals("a1", alert.get("name") );
             Assert.assertTrue("timestamp should be truncated to seconds",
                     Long.parseLong(alert.get("startTime").toString()) % 1000 == 0);
-            Assert.assertEquals(((Map<String, String>) alert.get("labels")).get("service"), svc);
-            Assert.assertEquals(((Map<String, String>) alert.get("annotations")).get("annotated_key"), "annotated_value");
+            Assert.assertEquals(svc, ((Map<String, String>) alert.get("labels")).get("service"));
+            Assert.assertEquals("5", ((Map<String, String>) alert.get("annotations")).get("observedValue"));
+            Assert.assertEquals("10", ((Map<String, String>) alert.get("annotations")).get("expectedValue"));
         }
     }
 
@@ -146,14 +145,14 @@ public class AppIntegrationTest {
     private String createAlert(final String serviceName) throws JsonProcessingException {
         final Alert alert = new Alert();
         alert.setName("a1");
-        alert.setStartTime(System.currentTimeMillis());
-        alert.setObservedValue("5");
-        alert.setExpectedValue("10");
+        alert.setCreationTime(System.currentTimeMillis());
 
         final Map<String, String> labels = Collections.singletonMap("service", serviceName);
         alert.setLabels(labels);
 
-        final Map<String, String> annotations = Collections.singletonMap("annotated_key", "annotated_value");
+        final Map<String, String> annotations = new HashMap<>();
+        annotations.put("observedValue", "5");
+        annotations.put("expectedValue", "10");
         alert.setAnnotations(annotations);
 
         return new ObjectMapper().writeValueAsString(alert);

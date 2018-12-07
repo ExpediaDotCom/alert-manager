@@ -204,7 +204,7 @@ public class StoreTask implements Runnable, Closeable {
         final AlertWithId aId = new AlertWithId();
         aId.setId(record.topic() + "-" + record.partition() + "-" + record.offset());
         aId.setAlert(record.value());
-        aId.getAlert().setStartTime(truncate(aId.getAlert().getStartTime()));
+        aId.getAlert().setCreationTime(truncate(aId.getAlert().getCreationTime()));
         return aId;
     }
 

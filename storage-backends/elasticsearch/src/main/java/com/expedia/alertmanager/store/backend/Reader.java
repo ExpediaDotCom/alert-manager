@@ -51,7 +51,7 @@ class Reader {
 
         final BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         labels.forEach((key, value) -> boolQuery.must(QueryBuilders.matchQuery(LABELS + '.' + key, value)));
-        boolQuery.must(new RangeQueryBuilder(START_TIME).gt(from).lt(to));
+        boolQuery.must(new RangeQueryBuilder(CREATION_TIME).gt(from).lt(to));
 
         sourceBuilder
                 .query(boolQuery)
@@ -88,19 +88,12 @@ class Reader {
 
     private static Alert convertMapToAlertData(final Map<String, Object> sourceAsMap) {
         final Alert alert = new Alert();
-        alert.setStartTime(Long.parseLong(sourceAsMap.get(START_TIME).toString()));
+        alert.setCreationTime(Long.parseLong(sourceAsMap.get(CREATION_TIME).toString()));
         alert.setName(sourceAsMap.get(NAME).toString());
         alert.setLabels((Map<String, String>)sourceAsMap.get(LABELS));
         if (sourceAsMap.get(ANNOTATIONS) != null) {
             alert.setAnnotations((Map<String, String>) sourceAsMap.get(ANNOTATIONS));
         }
-        if (sourceAsMap.get(OBSERVED_VALUE) != null) {
-            alert.setObservedValue(sourceAsMap.get(OBSERVED_VALUE).toString());
-        }
-        if (sourceAsMap.get(EXPECTED_VALUE) != null) {
-            alert.setExpectedValue(sourceAsMap.get(EXPECTED_VALUE).toString());
-        }
-
         if (sourceAsMap.get(GENERATOR_URL) != null) {
             alert.setGeneratorURL(sourceAsMap.get(GENERATOR_URL).toString());
         }

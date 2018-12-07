@@ -40,7 +40,7 @@ public class ElasticSearchStore implements AlertStore {
     final static String ES_INDEX_TYPE = "alerts";
 
     static String NAME = "name";
-    static String START_TIME = "startTime";
+    static String CREATION_TIME = "startTime";
     static String ANNOTATIONS = "annotations";
     static String LABELS = "labels";
     static String EXPECTED_VALUE = "expectedValue";

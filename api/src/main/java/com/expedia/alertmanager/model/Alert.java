@@ -29,8 +29,6 @@ public class Alert {
     private String name;
     private Map<String, String> labels;
     private Map<String, String> annotations;
-    private String observedValue;
-    private String expectedValue;
-    private long startTime;
+    private long creationTime;
     private String generatorURL;
 }

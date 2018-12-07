@@ -47,7 +47,7 @@ class Writer {
 
         try {
             for (final AlertWithId alertWrapper : alerts) {
-                final String idxName = indexName(formatter, alertWrapper.getAlert().getStartTime());
+                final String idxName = indexName(formatter, alertWrapper.getAlert().getCreationTime());
                 final IndexRequest indexRequest = new IndexRequest(idxName, ES_INDEX_TYPE, alertWrapper.getId());
                 indexRequest.source(convertAlertToMap(alertWrapper.getAlert()));
                 bulkRequest.add(indexRequest);
@@ -108,12 +108,10 @@ class Writer {
         return XContentFactory.jsonBuilder()
                 .startObject()
                 .field(NAME, alert.getName())
-                .field(START_TIME, alert.getStartTime())
+                .field(CREATION_TIME, alert.getCreationTime())
                 .field(ANNOTATIONS, alert.getAnnotations())
                 .field(LABELS, alert.getLabels())
                 .field(GENERATOR_URL, alert.getGeneratorURL())
-                .field(OBSERVED_VALUE, alert.getObservedValue())
-                .field(EXPECTED_VALUE, alert.getExpectedValue())
                 .endObject();
     }
 

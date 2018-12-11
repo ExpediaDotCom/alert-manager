@@ -20,6 +20,7 @@ import com.expedia.alertmanager.temp.InvestigationResult;
 import com.expedia.alertmanager.temp.MappedMetricData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -49,7 +50,7 @@ public class MailContentBuilder {
     //FIXME - temporary logic to derive investigation results
     private Map<String, String> createInvestigationResults(AnomalyResult anomalyResult) {
         Map<String, String> investigationResults = new HashMap<>();
-        if (anomalyResult != null && !anomalyResult.getInvestigationResults().isEmpty()) {
+        if (anomalyResult != null && !ObjectUtils.isEmpty(anomalyResult.getInvestigationResults())) {
             InvestigationResult investigationResult = anomalyResult.getInvestigationResults().get(0);
             if (investigationResult.getDetails().get("playbookUrl") != null) {
                 investigationResults.put("playbookUrl",

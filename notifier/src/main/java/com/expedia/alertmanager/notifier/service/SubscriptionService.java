@@ -15,7 +15,7 @@
  */
 package com.expedia.alertmanager.notifier.service;
 
-import com.expedia.alertmanager.model.SearchSubscriptionRequest;
+import com.expedia.alertmanager.model.MatchSubscriptionsRequest;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.notifier.config.ApplicationConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,9 +55,9 @@ public class SubscriptionService {
     }
 
     public List<SubscriptionResponse> getSubscriptions(Map<String, String> labels) {
-        SearchSubscriptionRequest rq = new SearchSubscriptionRequest();
+        MatchSubscriptionsRequest rq = new MatchSubscriptionsRequest();
         rq.setLabels(labels);
-        HttpEntity<SearchSubscriptionRequest> request = new HttpEntity<>(rq);
+        HttpEntity<MatchSubscriptionsRequest> request = new HttpEntity<>(rq);
         ResponseEntity<List<SubscriptionResponse>> subscriptionResponses =
             restTemplate.exchange(this.subscriptionSerUrl, HttpMethod.POST,
                 request, new ParameterizedTypeReference<List<SubscriptionResponse>>(){});

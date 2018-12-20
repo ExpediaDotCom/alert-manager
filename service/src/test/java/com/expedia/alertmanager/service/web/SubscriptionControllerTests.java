@@ -20,7 +20,7 @@ import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.ExpressionTree;
 import com.expedia.alertmanager.model.Operator;
-import com.expedia.alertmanager.model.SearchSubscriptionRequest;
+import com.expedia.alertmanager.model.MatchSubscriptionsRequest;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.model.UpdateSubscriptionRequest;
 import com.expedia.alertmanager.model.User;
@@ -111,7 +111,7 @@ public class SubscriptionControllerTests {
 
     @Test
     public void givenSearchSubscriptionRequestByUserId_shouldReturnSubscriptions() throws Exception {
-        SearchSubscriptionRequest searchSubscriptionRequest = new SearchSubscriptionRequest();
+        MatchSubscriptionsRequest searchSubscriptionRequest = new MatchSubscriptionsRequest();
         searchSubscriptionRequest.setUserId("test");
         SubscriptionResponse response = new SubscriptionResponse();
         response.setUser(user("id"));
@@ -127,7 +127,7 @@ public class SubscriptionControllerTests {
 
     @Test
     public void givenSearchSubscriptionRequestByLabels_shouldUpdateSubscriptions() throws Exception {
-        SearchSubscriptionRequest searchSubscriptionRequest = new SearchSubscriptionRequest();
+        MatchSubscriptionsRequest searchSubscriptionRequest = new MatchSubscriptionsRequest();
         Map<String, String> labels = new HashMap<>();
         labels.put("app", "shopping");
         searchSubscriptionRequest.setLabels(labels);

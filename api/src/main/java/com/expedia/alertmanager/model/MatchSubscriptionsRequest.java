@@ -24,7 +24,6 @@ import java.util.Map;
 @Data
 @ToString
 @EqualsAndHashCode
-public class SearchSubscriptionRequest {
-    private String userId;
+public class MatchSubscriptionsRequest {
     private Map<String, String> labels;
 }

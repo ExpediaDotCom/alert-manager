@@ -221,30 +221,37 @@ public class SubscriptionStoreService {
                     .build();
     }
 
-    public List<SubscriptionResponse> searchSubscriptions(String userId, Map<String, String> labels) {
+    public List<SubscriptionResponse> matchSubscriptions(Map<String, String> labels) {
         JestClient client = clientFactory.getObject();
         try {
-            if (userId != null) {
-                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-                searchSourceBuilder.query(
-                    QueryBuilders.nestedQuery(SubscriptionEntity.USER_KEYWORD,
+            XContentBuilder xContent = XContentFactory.jsonBuilder();
+            xContent.map(labels);
+            PercolateQueryBuilder percolateQuery =
+                new PercolateQueryBuilder(SubscriptionEntity.QUERY_KEYWORD, elasticSearchConfig.getDocType(), xContent.bytes(),
+                    XContentType.JSON);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(percolateQuery);
+            long startTime = System.currentTimeMillis();
+            List<SubscriptionResponse> responses = getSubscriptionResponses(client, searchSourceBuilder);
+            long stopTime = System.currentTimeMillis();
+            log.info("Subscription match elapsed time:{}", stopTime - startTime);
+            return responses;
+        } catch (IOException e) {
+            log.error("Subscriptions match failed", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<SubscriptionResponse> searchSubscriptions(String userId) {
+        JestClient client = clientFactory.getObject();
+        try {
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(
+                QueryBuilders.nestedQuery(SubscriptionEntity.USER_KEYWORD,
                     QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(
                         SubscriptionEntity.USER_KEYWORD + "." + SubscriptionEntity.USER_ID_KEYWORD, userId)), ScoreMode.None));
-                return getSubscriptionResponses(client, searchSourceBuilder);
-            } else {
-                XContentBuilder xContent = XContentFactory.jsonBuilder();
-                xContent.map(labels);
-                PercolateQueryBuilder percolateQuery =
-                    new PercolateQueryBuilder(SubscriptionEntity.QUERY_KEYWORD, elasticSearchConfig.getDocType(), xContent.bytes(),
-                        XContentType.JSON);
-                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-                searchSourceBuilder.query(percolateQuery);
-                long startTime = System.currentTimeMillis();
-                List<SubscriptionResponse> responses = getSubscriptionResponses(client, searchSourceBuilder);
-                long stopTime = System.currentTimeMillis();
-                log.info("Search elapsed time:{}", stopTime - startTime);
-                return responses;
-            }
+            return getSubscriptionResponses(client, searchSourceBuilder);
+
         } catch (IOException e) {
             log.error("Search subscriptions failed", e);
             throw new RuntimeException(e);

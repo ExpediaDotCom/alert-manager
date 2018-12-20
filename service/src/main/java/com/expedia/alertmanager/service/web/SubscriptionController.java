@@ -17,7 +17,7 @@ package com.expedia.alertmanager.service.web;
 
 import com.expedia.alertmanager.service.dao.SubscriptionStoreService;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
-import com.expedia.alertmanager.model.SearchSubscriptionRequest;
+import com.expedia.alertmanager.model.MatchSubscriptionsRequest;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.model.UpdateSubscriptionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -55,23 +56,22 @@ public class SubscriptionController {
         return subscriptionStore.createSubscriptions(createSubRqs);
     }
 
-    @RequestMapping(value = "/subscriptions/search", method = RequestMethod.POST)
-    public List<SubscriptionResponse> searchSubscriptions(
-        @RequestBody SearchSubscriptionRequest searchSubscriptionRequest) {
-        Assert.isTrue(!StringUtils.isEmpty(searchSubscriptionRequest.getUserId())
-                || !ObjectUtils.isEmpty(searchSubscriptionRequest.getLabels()),
-            "user id or labels needs to be present");
-        Assert.isTrue(!(!StringUtils.isEmpty(searchSubscriptionRequest.getUserId())
-                && !ObjectUtils.isEmpty(searchSubscriptionRequest.getLabels())),
-            "search by both user id and labels not supported");
-
-        return subscriptionStore.searchSubscriptions(searchSubscriptionRequest.getUserId(),
-            searchSubscriptionRequest.getLabels());
+    @RequestMapping(value = "/subscriptions/match", method = RequestMethod.POST)
+    public List<SubscriptionResponse> matchSubscriptions(
+        @RequestBody MatchSubscriptionsRequest matchSubscriptionsRequest) {
+        Assert.isTrue(!ObjectUtils.isEmpty(matchSubscriptionsRequest.getLabels()),
+            "labels needs to be present");
+        return subscriptionStore.matchSubscriptions(matchSubscriptionsRequest.getLabels());
     }
 
     @RequestMapping(value = "/subscriptions/{id}", method = RequestMethod.GET)
-    public SubscriptionResponse getSubscription(@PathVariable String id) {
+    public SubscriptionResponse getSubscriptionById(@PathVariable String id) {
         return subscriptionStore.getSubscription(id);
+    }
+
+    @RequestMapping(value = "/subscriptions/", method = RequestMethod.GET)
+    public List<SubscriptionResponse> getSubscription(@RequestParam String userId) {
+        return subscriptionStore.searchSubscriptions(userId);
     }
 
     @RequestMapping(value = "/subscriptions", method = RequestMethod.PUT)

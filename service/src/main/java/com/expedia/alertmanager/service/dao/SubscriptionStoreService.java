@@ -230,6 +230,8 @@ public class SubscriptionStoreService {
                     QueryBuilders.nestedQuery(SubscriptionEntity.USER_KEYWORD,
                     QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(
                         SubscriptionEntity.USER_KEYWORD + "." + SubscriptionEntity.USER_ID_KEYWORD, userId)), ScoreMode.None));
+                //FIXME setting default result set size to 200 until we have pagination.
+                searchSourceBuilder.size(200);
                 return getSubscriptionResponses(client, searchSourceBuilder);
             } else {
                 XContentBuilder xContent = XContentFactory.jsonBuilder();

@@ -121,7 +121,7 @@ public class StoreTask implements Runnable, Closeable {
     private void runLoop() throws InterruptedException {
         while(!shutdownRequested.get()) {
             final Optional<ConsumerRecords<String, Alert>> mayBeRecords = poll();
-            if (mayBeRecords.isPresent()) {
+            if (mayBeRecords.isPresent() && !mayBeRecords.get().isEmpty()) {
                 final ConsumerRecords<String, Alert> records = mayBeRecords.get();
                 final Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
                 final List<AlertWithId> saveAlerts = new ArrayList<>();

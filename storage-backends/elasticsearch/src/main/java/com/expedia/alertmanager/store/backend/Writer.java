@@ -51,8 +51,8 @@ class Writer {
                 final IndexRequest indexRequest = new IndexRequest(idxName, ES_INDEX_TYPE, alertWrapper.getId());
                 indexRequest.source(convertAlertToMap(alertWrapper.getAlert()));
                 bulkRequest.add(indexRequest);
-                this.client.bulkAsync(bulkRequest, new BulkActionListener(bulkRequest, callback, 0));
             }
+            this.client.bulkAsync(bulkRequest, new BulkActionListener(bulkRequest, callback, 0));
         } catch (IOException ex) {
             callback.onComplete(ex);
         }

@@ -83,8 +83,8 @@ public class SubscriptionStoreService {
             elastic search.
          */
         Set<String> fields = getFields(createSubRqs);
-        Set<String> fieldsWithoutExistingMapping = getFieldsWithoutExistingMapping(fields);
-        updateIndexMappings(fieldsWithoutExistingMapping);
+        Set<String> newFieldMappings = getFieldsWithoutExistingMapping(fields);
+        updateIndexMappings(newFieldMappings);
 
         //create subscriptions
         return storeSubscriptions(createSubRqs);
@@ -110,7 +110,8 @@ public class SubscriptionStoreService {
 
     private Index buildCreateSubscriptionRequest(CreateSubscriptionRequest createSubRq) {
         long now = Instant.now().toEpochMilli();
-        SubscriptionEntity subscriptionEntity = new SubscriptionEntity(createSubRq.getUser(),
+        SubscriptionEntity subscriptionEntity = new SubscriptionEntity(createSubRq.getName(),
+            createSubRq.getUser(),
             createSubRq.getDispatchers(),
             queryUtil.buildQuery(createSubRq.getExpression()), now, now);
         return new Index.Builder(subscriptionEntity)
@@ -154,7 +155,9 @@ public class SubscriptionStoreService {
     private Index buildUpdateSubscriptionRequest(UpdateSubscriptionRequest updateSubscriptionReq,
                                                  SubscriptionResponse existingSubscription) {
         long now = Instant.now().toEpochMilli();
-        SubscriptionEntity subscriptionEntity = new SubscriptionEntity(existingSubscription.getUser(),
+        SubscriptionEntity subscriptionEntity = new SubscriptionEntity(
+            updateSubscriptionReq.getName(),
+            existingSubscription.getUser(),
             updateSubscriptionReq.getDispatchers(),
             queryUtil.buildQuery(updateSubscriptionReq.getExpression()), now, existingSubscription.getCreatedTime());
         return new Index.Builder(subscriptionEntity).index(elasticSearchConfig.getIndexName())
@@ -168,11 +171,11 @@ public class SubscriptionStoreService {
         }
     }
 
-    private void updateIndexMappings(Set<String> missingFieldMappings) {
+    private void updateIndexMappings(Set<String> newFieldMappings) {
         JestClient client = clientFactory.getObject();
         try {
-            if (!missingFieldMappings.isEmpty()) {
-                PutMapping builder = buildUpdateMappingsRequest(missingFieldMappings);
+            if (!newFieldMappings.isEmpty()) {
+                PutMapping builder = buildUpdateMappingsRequest(newFieldMappings);
                 JestResult result = client.execute(builder);
                 validateResponseStatus(result);
             }

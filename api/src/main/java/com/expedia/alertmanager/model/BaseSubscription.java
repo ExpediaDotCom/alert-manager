@@ -21,6 +21,7 @@ import java.util.List;
 
 @Data
 public abstract class BaseSubscription {
+    protected String name;
     protected ExpressionTree expression;
     protected List<Dispatcher> dispatchers;
 }

@@ -27,13 +27,17 @@ import java.util.List;
 @AllArgsConstructor
 public class SubscriptionEntity {
     // Prefixing variable names with 'am_' to reserve these fields to be used in ES mappings.
-    public static final String USER_KEYWORD = "am_user";
+    public static final String AM_PREFIX = "am_";
+    public static final String NAME = AM_PREFIX + "name";
+    public static final String USER_KEYWORD = AM_PREFIX + "user";
     public static final String USER_ID_KEYWORD = "id";
-    public static final String DISPATCHERS_KEYWORD = "am_dispatchers";
-    public static final String QUERY_KEYWORD = "am_query";
-    public static final String LAST_MOD_TIME_KEYWORD = "am_lastModifiedTime";
-    public static final String CREATE_TIME_KEYWORD = "am_createdTime";
+    public static final String DISPATCHERS_KEYWORD = AM_PREFIX + "dispatchers";
+    public static final String QUERY_KEYWORD = AM_PREFIX + "query";
+    public static final String LAST_MOD_TIME_KEYWORD = AM_PREFIX + "lastModifiedTime";
+    public static final String CREATE_TIME_KEYWORD = AM_PREFIX + "createdTime";
 
+    @SerializedName(NAME)
+    private String name;
     @SerializedName(USER_KEYWORD)
     private User user;
     @SerializedName(DISPATCHERS_KEYWORD)

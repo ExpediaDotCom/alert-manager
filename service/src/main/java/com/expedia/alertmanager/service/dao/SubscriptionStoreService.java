@@ -289,6 +289,7 @@ public class SubscriptionStoreService {
         SubscriptionEntity subscriptionEntity = GSON.fromJson(json, SubscriptionEntity.class);
         SubscriptionResponse response = new SubscriptionResponse();
         response.setId(id);
+        response.setName(subscriptionEntity.getName());
         response.setDispatchers(subscriptionEntity.getDispatchers());
         response.setExpression(queryUtil.buildExpressionTree(subscriptionEntity.getQuery()));
         response.setUser(subscriptionEntity.getUser());

@@ -56,6 +56,8 @@ public class RequestValidator {
         Assert.notNull(operand.getField(), "Operands can't be empty");
         Assert.isTrue(!StringUtils.isEmpty(operand.getField().getKey()), "Invalid operand field key");
         Assert.isTrue(!StringUtils.isEmpty(operand.getField().getValue()), "Invalid operand field value");
+        Assert.isTrue(!operand.getField().getKey().startsWith(SubscriptionEntity.AM_PREFIX),
+            "Invalid operand field key. " + SubscriptionEntity.AM_PREFIX + "is a reserved prefix");
         assertOperandFor(operand, SubscriptionEntity.QUERY_KEYWORD);
         assertOperandFor(operand, SubscriptionEntity.LAST_MOD_TIME_KEYWORD);
         assertOperandFor(operand, SubscriptionEntity.CREATE_TIME_KEYWORD);

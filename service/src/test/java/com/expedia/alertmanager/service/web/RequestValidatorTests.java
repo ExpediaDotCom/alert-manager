@@ -25,6 +25,7 @@ import org.junit.rules.ExpectedException;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static com.expedia.alertmanager.service.model.SubscriptionEntity.AM_PREFIX;
 import static com.expedia.alertmanager.service.model.SubscriptionEntity.CREATE_TIME_KEYWORD;
 import static com.expedia.alertmanager.service.model.SubscriptionEntity.DISPATCHERS_KEYWORD;
 import static com.expedia.alertmanager.service.model.SubscriptionEntity.QUERY_KEYWORD;
@@ -111,6 +112,15 @@ public class RequestValidatorTests {
     @Test
     public void givenAnExpressionWithOperandsHavingReserved_DispatcherKeyword_validateExpressionShouldFail() {
         assertExpressionOperandName(DISPATCHERS_KEYWORD);
+    }
+
+    @Test
+    public void givenAnExpressionWithOperandsHavingReserved_Prefix_validateExpressionShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        ExpressionTree expressionTree = new ExpressionTree();
+        expressionTree.setOperator(Operator.AND);
+        expressionTree.setOperands(Arrays.asList(operand(AM_PREFIX + "xx", "test")));
+        requestValidator.validateExpression(expressionTree);
     }
 
     private void assertExpressionOperandName(String operandName) {

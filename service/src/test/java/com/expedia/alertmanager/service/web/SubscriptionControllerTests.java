@@ -15,7 +15,6 @@
  */
 package com.expedia.alertmanager.service.web;
 
-import com.expedia.alertmanager.service.dao.SubscriptionStoreService;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.ExpressionTree;
@@ -24,6 +23,7 @@ import com.expedia.alertmanager.model.SearchSubscriptionRequest;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.model.UpdateSubscriptionRequest;
 import com.expedia.alertmanager.model.User;
+import com.expedia.alertmanager.service.dao.SubscriptionStoreService;
 import com.google.gson.Gson;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,10 +42,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.expedia.alertmanager.model.Dispatcher.Type.EMAIL;
 import static com.expedia.alertmanager.service.web.TestUtil.dispatcher;
 import static com.expedia.alertmanager.service.web.TestUtil.operand;
 import static com.expedia.alertmanager.service.web.TestUtil.user;
-import static com.expedia.alertmanager.model.Dispatcher.Type.EMAIL;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -91,6 +91,7 @@ public class SubscriptionControllerTests {
         expression.setOperator(Operator.AND);
         expression.setOperands(Arrays.asList(operand("app", "search-app")));
         CreateSubscriptionRequest createSubscriptionRequest = new CreateSubscriptionRequest();
+        createSubscriptionRequest.setName("sub");
         createSubscriptionRequest.setUser(user);
         List<Dispatcher> dispatchers = Arrays.asList(dispatcher("email", EMAIL));
         createSubscriptionRequest.setDispatchers(dispatchers);
@@ -126,7 +127,7 @@ public class SubscriptionControllerTests {
     }
 
     @Test
-    public void givenSearchSubscriptionRequestByLabels_shouldUpdateSubscriptions() throws Exception {
+    public void givenSearchSubscriptionRequestByLabels_shouldReturnSubscriptions() throws Exception {
         SearchSubscriptionRequest searchSubscriptionRequest = new SearchSubscriptionRequest();
         Map<String, String> labels = new HashMap<>();
         labels.put("app", "shopping");
@@ -144,7 +145,7 @@ public class SubscriptionControllerTests {
     }
 
     @Test
-    public void givenValidUpdateSubscriptionRequest_shouldReturnSubscriptions() throws Exception {
+    public void givenValidUpdateSubscriptionRequest_shouldUpdateSubscriptions() throws Exception {
         ExpressionTree expression = new ExpressionTree();
         expression.setOperator(Operator.AND);
         expression.setOperands(Arrays.asList(operand("app", "search-app")));

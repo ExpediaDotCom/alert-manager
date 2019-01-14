@@ -1,6 +1,7 @@
 package com.expedia.alertmanager.service.util;
 
 import com.expedia.alertmanager.service.conf.ElasticSearchConfig;
+import com.google.gson.JsonObject;
 import io.searchbox.action.Action;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
@@ -16,12 +17,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.expedia.alertmanager.service.model.SubscriptionEntity.CREATE_TIME_KEYWORD;
-import static com.expedia.alertmanager.service.model.SubscriptionEntity.DISPATCHERS_KEYWORD;
-import static com.expedia.alertmanager.service.model.SubscriptionEntity.LAST_MOD_TIME_KEYWORD;
-import static com.expedia.alertmanager.service.model.SubscriptionEntity.QUERY_KEYWORD;
-import static com.expedia.alertmanager.service.model.SubscriptionEntity.USER_KEYWORD;
 
 /**
  * Util class to create index with mappings if not found.
@@ -48,16 +43,15 @@ public class IndexCreatorIfNotPresent implements ApplicationListener<Application
                     Map<String, Object> settings = new HashMap<>();
                     settings.put("number_of_shards", 2);
 
-                    String mappingsJson =
-                        "{\"_doc\": {\"dynamic\": strict, \"properties\":{\"" + USER_KEYWORD +
-                            "\":{\"type\":\"nested\", \"dynamic\": true}, \"" + DISPATCHERS_KEYWORD +
-                            "\":{\"type\":\"object\"}, \"" + QUERY_KEYWORD + "\":{\"type\":\"percolator\"}," +
-                            "\"" + LAST_MOD_TIME_KEYWORD + "\":{\"type\":\"long\"}, \"" + CREATE_TIME_KEYWORD +
-                            "\":{\"type\":\"long\"} } }}";
+                    JsonObject docObject = new JsonObject();
+                    docObject.addProperty("dynamic", "strict");
+                    docObject.add("properties", ElasticUtil.buildMappingsJson());
+                    JsonObject mapObject = new JsonObject();
+                    mapObject.add("_doc", docObject);
 
                     CreateIndex createIndex = new CreateIndex.Builder(elasticSearchConfig.getIndexName())
                         .settings(settings)
-                        .mappings(mappingsJson)
+                        .mappings(mapObject.getAsString())
                         .build();
 
                     result = client.execute(createIndex);
@@ -72,4 +66,5 @@ public class IndexCreatorIfNotPresent implements ApplicationListener<Application
             }
         }
     }
+
 }

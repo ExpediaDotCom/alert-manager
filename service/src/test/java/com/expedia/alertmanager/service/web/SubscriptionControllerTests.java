@@ -116,13 +116,15 @@ public class SubscriptionControllerTests {
         searchSubscriptionRequest.setUserId("test");
         SubscriptionResponse response = new SubscriptionResponse();
         response.setUser(user("id"));
+        response.setName("name");
         given(subscriptionStore.searchSubscriptions("test", null))
             .willReturn(Arrays.asList(response));
         mvc.perform(post("/subscriptions/search")
             .content(GSON.toJson(searchSubscriptionRequest))
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.[0].user.id").value("id"));
+            .andExpect(jsonPath("$.[0].user.id").value("id"))
+            .andExpect(jsonPath("$.[0].name").value("name"));
         verify(subscriptionStore, times(1)).searchSubscriptions("test", null);
     }
 
@@ -134,13 +136,15 @@ public class SubscriptionControllerTests {
         searchSubscriptionRequest.setLabels(labels);
         SubscriptionResponse response = new SubscriptionResponse();
         response.setUser(user("id"));
+        response.setName("name");
         given(subscriptionStore.searchSubscriptions(null, labels))
             .willReturn(Arrays.asList(response));
         mvc.perform(post("/subscriptions/search")
             .content(GSON.toJson(searchSubscriptionRequest))
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.[0].user.id").value("id"));
+            .andExpect(jsonPath("$.[0].user.id").value("id"))
+            .andExpect(jsonPath("$.[0].name").value("name"));
         verify(subscriptionStore, times(1)).searchSubscriptions(null, labels);
     }
 

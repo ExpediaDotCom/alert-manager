@@ -20,7 +20,7 @@ data "template_file" "deployment_yaml" {
     graphite_enabled = "${var.graphite_enabled}"
     node_selector_label = "${var.node_selector_label}"
     image = "${var.image}"
-    image_pull_policy   = "${var.image_pull_policy}"
+    image_pull_policy = "${var.image_pull_policy}"
     replicas = "${var.replicas}"
     memory_limit = "${var.memory_limit}"
     memory_request = "${var.memory_request}"
@@ -47,7 +47,7 @@ data "template_file" "config_data" {
 
 resource "kubernetes_config_map" "haystack-config" {
   metadata {
-    name      = "${local.configmap_name}"
+    name = "${local.configmap_name}"
     namespace = "${var.namespace}"
   }
 
@@ -59,13 +59,20 @@ resource "kubernetes_config_map" "haystack-config" {
 }
 
 
+resource "null_resource" "kubeconfig_dependency" {
+  triggers {
+    kubeconfig = "${var.kubectl_context_name}"
+  }
+}
 resource "null_resource" "kubectl_apply" {
+  depends_on = [
+    "null_resource.kubectl_destroy"]
   triggers {
     template = "${data.template_file.deployment_yaml.rendered}"
   }
 
   provisioner "local-exec" {
-    command = "echo '${data.template_file.deployment_yaml.rendered}' | ${var.kubectl_executable_name} apply -f - --context ${var.kubectl_context_name}"
+    command = "echo '${data.template_file.deployment_yaml.rendered}' | ${var.kubectl_executable_name} apply -f - --kubeconfig ${var.kubectl_context_name}"
   }
 
   count = "${local.count}"
@@ -73,7 +80,7 @@ resource "null_resource" "kubectl_apply" {
 
 resource "null_resource" "kubectl_destroy" {
   provisioner "local-exec" {
-    command = "echo '${data.template_file.deployment_yaml.rendered}' | ${var.kubectl_executable_name} delete -f - --context ${var.kubectl_context_name}"
+    command = "echo '${data.template_file.deployment_yaml.rendered}' | ${var.kubectl_executable_name} delete -f - --kubeconfig ${var.kubectl_context_name}"
     when = "destroy"
   }
 

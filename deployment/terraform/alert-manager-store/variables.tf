@@ -10,6 +10,7 @@ variable "graphite_enabled" {}
 
 variable "enabled" {}
 
+variable "aa_cname" {}
 variable "kubectl_executable_name" {}
 variable "kubectl_context_name" {}
 variable "node_selector_label" {}

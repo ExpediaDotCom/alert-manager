@@ -7,7 +7,7 @@ variable "graphite_enabled" {}
 variable "kubectl_executable_name" {}
 variable "app_namespace" {}
 variable "node_selector_label"{}
-variable "aa_ui_cname" {}
+variable "aa_cname" {}
 
 variable "alert-manager" {
   type = "map"

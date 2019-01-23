@@ -14,7 +14,7 @@ data "template_file" "deployment_yaml" {
 
   vars {
     app_name = "${local.app_name}"
-    aa_ui_cname         = "${var.aa_ui_cname}"
+    aa_cname = "${var.aa_cname}"
     namespace = "${var.namespace}"
     graphite_port = "${var.graphite_port}"
     graphite_host = "${var.graphite_hostname}"

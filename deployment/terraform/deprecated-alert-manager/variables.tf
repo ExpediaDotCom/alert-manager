@@ -13,6 +13,7 @@ variable "enabled" {}
 
 variable "kubectl_executable_name" {}
 variable "kubectl_context_name" {}
+variable "aa_ui_cname" {}
 variable "node_selector_label" {}
 variable "memory_limit" {}
 variable "memory_request" {}

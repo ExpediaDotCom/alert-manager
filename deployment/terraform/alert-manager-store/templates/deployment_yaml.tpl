@@ -60,3 +60,21 @@ spec:
       - name: config-volume
         configMap:
           name: ${configmap_name}
+# ------------------- Ingress ------------------- #
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: traefik-alert-manager
+  namespace: ${namespace}
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+   - host: ${aa_ui_cname}
+     http:
+        paths:
+         - path: /alert-manager
+           backend:
+             serviceName: alert-manager-service
+             servicePort: 80

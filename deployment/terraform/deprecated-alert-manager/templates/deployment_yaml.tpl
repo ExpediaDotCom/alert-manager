@@ -83,3 +83,20 @@ spec:
     targetPort: ${container_port}
   selector:
     k8s-app: ${app_name}
+# ------------------- Ingress ------------------- #
+kind: Ingress
+metadata:
+  name: traefik-alert-manager-deprecated
+  namespace: ${namespace}
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+   - host: ${aa_ui_cname}
+     http:
+       paths:
+       - path: /alert-manager-deprecated
+         backend:
+           serviceName: alert-manager-deprecated
+           servicePort: 80

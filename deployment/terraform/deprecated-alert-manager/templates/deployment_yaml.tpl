@@ -84,6 +84,7 @@ spec:
   selector:
     k8s-app: ${app_name}
 # ------------------- Ingress ------------------- #
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: traefik-alert-manager-deprecated

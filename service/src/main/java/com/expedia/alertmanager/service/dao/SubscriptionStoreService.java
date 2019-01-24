@@ -105,6 +105,8 @@ public class SubscriptionStoreService {
         } catch (IOException e) {
             log.error("Store subscriptions failed", e);
             throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
         }
     }
 
@@ -149,6 +151,8 @@ public class SubscriptionStoreService {
         } catch (IOException e) {
             log.error("Update subscriptions failed", e);
             throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
         }
     }
 
@@ -182,6 +186,8 @@ public class SubscriptionStoreService {
         } catch (IOException e) {
             log.error("Update index mappings failed", e);
             throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
         }
     }
 
@@ -214,6 +220,8 @@ public class SubscriptionStoreService {
         } catch (IOException e) {
             log.error("Get index mappings failed", e);
             throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
         }
     }
 
@@ -253,6 +261,8 @@ public class SubscriptionStoreService {
         } catch (IOException e) {
             log.error("Search subscriptions failed", e);
             throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
         }
     }
 
@@ -282,6 +292,8 @@ public class SubscriptionStoreService {
         } catch (IOException e) {
             log.error("Delete subscription with id " + id + " failed", e);
             throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
         }
     }
 
@@ -308,6 +320,14 @@ public class SubscriptionStoreService {
         return hits.stream()
             .map(hit -> getSubscriptionResponse(GSON.toJson(hit.source), hit.id))
             .collect(Collectors.toList());
+    }
+
+    private void closeConnection(JestClient client) {
+        try {
+            client.close();
+        } catch (IOException e) {
+            log.error("Couldn't close the ES connection", e);
+        }
     }
 
 }

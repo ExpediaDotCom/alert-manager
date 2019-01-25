@@ -277,6 +277,8 @@ public class SubscriptionStoreService {
         } catch (IOException e) {
             log.error("Get subscription with id " + id + " failed", e);
             throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
         }
     }
 

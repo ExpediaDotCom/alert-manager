@@ -61,8 +61,8 @@ public class SubscriptionController {
         Assert.isTrue(!StringUtils.isEmpty(searchSubscriptionRequest.getUserId())
                 || !ObjectUtils.isEmpty(searchSubscriptionRequest.getLabels()),
             "user id or labels needs to be present");
-        Assert.isTrue(!(!StringUtils.isEmpty(searchSubscriptionRequest.getUserId())
-                && !ObjectUtils.isEmpty(searchSubscriptionRequest.getLabels())),
+        Assert.isTrue(null == searchSubscriptionRequest.getUserId()
+                || ObjectUtils.isEmpty(searchSubscriptionRequest.getLabels()),
             "search by both user id and labels not supported");
 
         return subscriptionStore.searchSubscriptions(searchSubscriptionRequest.getUserId(),

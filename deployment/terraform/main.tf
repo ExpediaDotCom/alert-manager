@@ -10,7 +10,7 @@ module "alert-manager" {
   source = "deprecated-alert-manager"
 
   # Docker
-  image = "${var.alert-manager["image"]}"
+  image = "expediadotcom/alert-manager-deprecated:${var.alert-manager["version"]}"
   image_pull_policy = "${var.alert-manager["image_pull_policy"]}"
 
   # Kubernetes
@@ -42,7 +42,7 @@ module "alert-manager-service" {
   source = "alert-manager-service"
 
   # Docker
-  image = "${var.alert-manager-service["image"]}"
+  image = "expediadotcom/alert-manager-service:${var.alert-manager-service["version"]}"
   image_pull_policy = "${var.alert-manager-service["image_pull_policy"]}"
 
   # Kubernetes
@@ -73,7 +73,7 @@ module "alert-manager-store" {
   source = "alert-manager-store"
 
   # Docker
-  image = "${var.alert-manager-store["image"]}"
+  image = "expediadotcom/alert-manager-store:${var.alert-manager-store["version"]}"
   image_pull_policy = "${var.alert-manager-store["image_pull_policy"]}"
 
   # Kubernetes
@@ -104,7 +104,7 @@ module "alert-manager-notifier" {
   source = "alert-manager-notifier"
 
   # Docker
-  image = "${var.alert-manager-notifier["image"]}"
+  image = "expediadotcom/alert-manager-notifier:${var.alert-manager-notifier["version"]}"
   image_pull_policy = "${var.alert-manager-notifier["image_pull_policy"]}"
 
   # Kubernetes

@@ -20,6 +20,8 @@ import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.notifier.action.Notifier;
 import com.expedia.alertmanager.notifier.action.NotifierFactory;
+import com.expedia.alertmanager.notifier.config.ApplicationConfig;
+import com.expedia.alertmanager.notifier.util.AlertCache;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,9 +50,16 @@ public class AlertProcessorTest {
     @Mock
     private Notifier notifier;
 
+    @Mock
+    private ApplicationConfig applicationConfig;
+
+    @Mock
+    private AlertCache alertCache;
+
     @Before
     public void setUp() {
-        alertProcessor = new AlertProcessor(notifierFactory, subscriptionService);
+        alertProcessor = new AlertProcessor(notifierFactory, subscriptionService,
+            applicationConfig, alertCache);
     }
 
     @Test

@@ -118,4 +118,18 @@ public class ApplicationConfig {
     public String getSlackToken() {
         return slackToken;
     }
+
+    @Value("${alert-cache.enabled:false}")
+    private boolean alertCacheEnabled;
+
+    public boolean isAlertCacheEnabled() {
+        return alertCacheEnabled;
+    }
+
+    @Value("${alert-cache.interval:10}")
+    private int cacheInterval;
+
+    public int getCacheInterval() {
+        return cacheInterval;
+    }
 }

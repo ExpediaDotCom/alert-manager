@@ -20,6 +20,8 @@ import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.notifier.action.Notifier;
 import com.expedia.alertmanager.notifier.action.NotifierFactory;
+import com.expedia.alertmanager.notifier.config.ApplicationConfig;
+import com.expedia.alertmanager.notifier.util.AlertCache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -33,17 +35,34 @@ public class AlertProcessor {
 
     private final NotifierFactory notifierFactory;
     private final SubscriptionService subscriptionService;
+    private final AlertCache alertCache;
+    private ApplicationConfig applicationConfig;
 
     @Autowired
     public AlertProcessor(NotifierFactory notifierFactory,
-                          SubscriptionService subscriptionService) {
+                          SubscriptionService subscriptionService,
+                          ApplicationConfig applicationConfig,
+                          AlertCache alertCache) {
         this.notifierFactory = notifierFactory;
         this.subscriptionService = subscriptionService;
+        this.applicationConfig = applicationConfig;
+        this.alertCache = alertCache;
     }
 
     @KafkaListener(topics = "${kafka.topic}")
     public void receive(Alert alert) {
-        log.info("received alert='{}'", alert.toString());
+        log.info("received alert='{}'", alert);
+        //FIXME - this is a temporary dedupe logic to reduce the duplicate email notifications.
+        //we are using a cache to make sure that we send only 1 unique alert notification with in a given interval
+        if (applicationConfig.isAlertCacheEnabled()) {
+            if (alertCache.getAlert(alert) != null) {
+                log.info("Duplicate alert {}", alert);
+                return;
+            } else {
+                alertCache.putAlert(alert);
+            }
+        }
+
         List<SubscriptionResponse> subscriptionResponses = getSubscriptions(alert);
         log.info("Matching subscriptions='{}'", subscriptionResponses.toString());
         subscriptionResponses.forEach(subscriptionResponse -> {

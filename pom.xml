@@ -79,6 +79,8 @@
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <skipGpg>true</skipGpg>
         <gson.version>2.8.0</gson.version>
+        <guava.version>26.0-jre</guava.version>
+        <commons-validator.version>1.6</commons-validator.version>
     </properties>
 
     <dependencyManagement>
@@ -137,13 +139,11 @@
                 <artifactId>elasticsearch</artifactId>
                 <version>${elasticsearch.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.elasticsearch.client</groupId>
                 <artifactId>elasticsearch-rest-high-level-client</artifactId>
                 <version>${elasticsearch.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.elasticsearch.plugin</groupId>
                 <artifactId>percolator-client</artifactId>
@@ -174,6 +174,11 @@
                 <artifactId>gson</artifactId>
                 <version>${gson.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -190,6 +195,12 @@
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
                 <version>${kafka-version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-validator</groupId>
+                <artifactId>commons-validator</artifactId>
+                <version>${commons-validator.version}</version>
             </dependency>
 
             <dependency>
@@ -333,6 +344,7 @@
                     <configuration>
                         <includes>
                             <include>**/*UnitTest*</include>
+                            <include>**/*Test*</include>
                         </includes>
                     </configuration>
                 </plugin>

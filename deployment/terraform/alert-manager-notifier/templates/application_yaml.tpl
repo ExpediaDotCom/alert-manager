@@ -17,3 +17,7 @@ mail:
 slack:
   url: https://slack.com/api/chat.postMessage
   token: $${SLACK_TOKEN}
+
+alert-cache:
+  enabled: true
+  interval: 20

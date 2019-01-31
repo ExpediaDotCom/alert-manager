@@ -37,7 +37,7 @@ public class NotifierFactory {
     public Notifier getNotifier(Dispatcher dispatcher) {
         switch (dispatcher.getType()) {
             case EMAIL:
-                return new AwsSesNotifier(messageComposer, applicationConfig.getFromEmail(), dispatcher.getEndpoint());
+                return new AwsSesNotifier(messageComposer, applicationConfig.getFromEmail(), dispatcher);
             case SLACK:
                 return new SlackNotifier(restTemplate, messageComposer, applicationConfig.getSlackUrl(),
                     applicationConfig.getSlackToken(), dispatcher.getEndpoint());

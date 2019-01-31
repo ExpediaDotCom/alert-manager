@@ -70,6 +70,11 @@
             <artifactId>snakeyaml</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+        </dependency>
+
         <!-- swagger -->
         <dependency>
             <groupId>io.springfox</groupId>

@@ -25,21 +25,23 @@ import com.amazonaws.services.simpleemail.model.Message;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendEmailResult;
 import com.expedia.alertmanager.model.Alert;
+import com.expedia.alertmanager.model.Dispatcher;
+import com.expedia.alertmanager.model.util.EmailDispatcherHelper;
 import com.expedia.alertmanager.notifier.builder.MessageComposer;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AwsSesNotifier implements Notifier {
 
-    private final String EMAIL_DELIMITER = ",";
+
     private final String from;
-    private final String to;
+    private final Dispatcher dispatcher;
     private MessageComposer emailComposer;
 
-    public AwsSesNotifier(MessageComposer emailComposer, String from, String to) {
+    public AwsSesNotifier(MessageComposer emailComposer, String from, Dispatcher dispatcher) {
         this.emailComposer = emailComposer;
         this.from = from;
-        this.to = to;
+        this.dispatcher = dispatcher;
     }
 
     @Override
@@ -51,7 +53,7 @@ public class AwsSesNotifier implements Notifier {
             //TODO - build email content from template
             SendEmailRequest request = new SendEmailRequest()
                 .withDestination(
-                    new Destination().withToAddresses(to.split(EMAIL_DELIMITER)))
+                    new Destination().withToAddresses(EmailDispatcherHelper.getToEmails(dispatcher)))
                 .withMessage(new Message()
                     .withBody(new Body()
                         .withHtml(new Content()

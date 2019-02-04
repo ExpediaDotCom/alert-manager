@@ -4,6 +4,7 @@ variable "replicas" {}
 variable "namespace" {}
 variable "kafka_endpoint" {}
 variable "es_urls" {}
+variable "additional_email_validator_expression" {}
 variable "graphite_hostname" {}
 variable "graphite_port" {}
 variable "graphite_enabled" {}

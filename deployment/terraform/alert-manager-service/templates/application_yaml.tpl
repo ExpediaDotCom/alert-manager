@@ -25,3 +25,6 @@ alert.store:
     conf:
      host: "${es_urls}"
      template: ""
+
+mail:
+  additional-validator-expression: "${additional_email_validator_expression}"

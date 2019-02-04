@@ -8,10 +8,6 @@ variable "kubectl_executable_name" {}
 variable "app_namespace" {}
 variable "node_selector_label"{}
 
-variable "alert-manager" {
-  type = "map"
-}
-
 variable "alert-manager-service" {
   type = "map"
 }

@@ -17,3 +17,6 @@ mail:
 slack:
   url: https://slack.com/api/chat.postMessage
   token:
+
+alert-store-es:
+  url: http://localhost:9200

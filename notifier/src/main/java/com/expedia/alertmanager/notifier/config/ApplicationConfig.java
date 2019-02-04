@@ -16,6 +16,7 @@
 package com.expedia.alertmanager.notifier.config;
 
 import com.expedia.alertmanager.model.Alert;
+import lombok.Getter;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,11 +72,8 @@ public class ApplicationConfig {
     }
 
     @Value("${subscription-search.url}")
+    @Getter
     private String subscriptionSerUrl;
-
-    public String getSubscriptionSerUrl() {
-        return this.subscriptionSerUrl;
-    }
 
     @Bean
     public ConsumerFactory<String, Alert> consumerFactory() {
@@ -92,11 +90,8 @@ public class ApplicationConfig {
     }
 
     @Value("${mail.from}")
+    @Getter
     private String fromEmail;
-
-    public String getFromEmail() {
-        return this.fromEmail;
-    }
 
     @Bean("freemarkerConfig")
     public FreeMarkerConfigurationFactoryBean getFreeMarkerConfiguration() {
@@ -106,16 +101,24 @@ public class ApplicationConfig {
     }
 
     @Value("${slack.url}")
+    @Getter
     private String slackUrl;
 
-    public String getSlackUrl() {
-        return slackUrl;
-    }
-
     @Value("${slack.token}")
+    @Getter
     private String slackToken;
 
-    public String getSlackToken() {
-        return slackToken;
-    }
+    @Value("${rate-limit.enabled:false}")
+    @Getter
+    private boolean rateLimitEnabled;
+
+    @Value("${rate-limit.value:0}")
+    @Getter
+    private long rateLimit;
+
+    //FIXME - This is a temp config.
+    //AM-notifier app shouldn't directly invoke alert store instead it should use AM-service to query alerts
+    @Value("${alert-store-es.url}")
+    @Getter
+    private String alertStoreEsUrl;
 }

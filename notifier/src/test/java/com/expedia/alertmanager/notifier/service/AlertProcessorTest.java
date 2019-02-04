@@ -20,6 +20,7 @@ import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.notifier.action.Notifier;
 import com.expedia.alertmanager.notifier.action.NotifierFactory;
+import com.expedia.alertmanager.notifier.config.ApplicationConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +34,7 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 public class AlertProcessorTest {
@@ -48,9 +50,16 @@ public class AlertProcessorTest {
     @Mock
     private Notifier notifier;
 
+    @Mock
+    private AlertReadService alertsReadService;
+
+    @Mock
+    private ApplicationConfig applicationConfig;
+
     @Before
     public void setUp() {
-        alertProcessor = new AlertProcessor(notifierFactory, subscriptionService);
+        alertProcessor = new AlertProcessor(notifierFactory, subscriptionService,
+            alertsReadService, applicationConfig);
     }
 
     @Test
@@ -70,5 +79,27 @@ public class AlertProcessorTest {
         alert.setLabels(Collections.emptyMap());
         alertProcessor.receive(alert);
         verify(notifier, times(2)).notify(alert);
+    }
+
+    @Test
+    public void whenAlertRateLimiterApplied_AndAlertReceivedIsBlockedByRateLimiter_noneOfTheNotifiersAreInvoked() {
+        when(applicationConfig.isRateLimitEnabled()).thenReturn(true);
+        when(applicationConfig.getRateLimit()).thenReturn(10L);
+        when(alertsReadService.getAlertsCountForToday()).thenReturn(10L);
+        Dispatcher emailDispatcher = new Dispatcher();
+        emailDispatcher.setType(Dispatcher.Type.EMAIL);
+        emailDispatcher.setEndpoint("email@email.com");
+        Dispatcher slackDispatcher = new Dispatcher();
+        emailDispatcher.setType(Dispatcher.Type.SLACK);
+        emailDispatcher.setEndpoint("#channel");
+        SubscriptionResponse subscriptionResponse = new SubscriptionResponse();
+        subscriptionResponse.setDispatchers(Arrays.asList(emailDispatcher, slackDispatcher));
+        given(subscriptionService.getSubscriptions(anyMap())).willReturn(Arrays.asList(subscriptionResponse));
+        given(notifierFactory.getNotifier(emailDispatcher)).willReturn(notifier);
+        given(notifierFactory.getNotifier(slackDispatcher)).willReturn(notifier);
+        Alert alert = new Alert();
+        alert.setLabels(Collections.emptyMap());
+        alertProcessor.receive(alert);
+        verify(notifier, times(0)).notify(alert);
     }
 }

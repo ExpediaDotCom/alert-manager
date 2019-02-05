@@ -30,5 +30,8 @@ JAVA_OPTS="${JAVA_OPTS} \
     -Dapplication.name=${APP_NAME} \
     -Dapplication.home=${APP_HOME}"
 
-
-exec java ${JAVA_OPTS} -jar "${APP_HOME}/alert-manager-notifier.jar" --spring.config.location=/config/application.yml
+if [[ -z "${SPRING_CONFIG_LOCATION}" ]]; then
+    exec java ${JAVA_OPTS} -jar "${APP_HOME}/alert-manager-notifier.jar" --spring.config.location=/config/application.yml
+else
+    exec java ${JAVA_OPTS} -jar "${APP_HOME}/alert-manager-notifier.jar"
+fi

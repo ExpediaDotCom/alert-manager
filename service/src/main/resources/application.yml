@@ -1,6 +1,6 @@
 es:
   index.name: subscription
-  create.index.if.not.found: false
+  create.index.if.not.found: true
   doctype: _doc
   urls: "http://elasticsearch:9200"
   connection.timeout: 5000

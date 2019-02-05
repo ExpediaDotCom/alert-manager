@@ -25,7 +25,7 @@ public class ElasticSearchConfig {
 
     @Value("${es.index.name}")
     private String indexName;
-    @Value("${create.index.if.not.found:false}")
+    @Value("${es.create.index.if.not.found:true}")
     private boolean createIndexIfNotFound;
     @Value("${es.doctype}")
     private String docType;

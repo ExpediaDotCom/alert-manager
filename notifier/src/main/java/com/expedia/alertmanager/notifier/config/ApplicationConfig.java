@@ -98,6 +98,41 @@ public class ApplicationConfig {
         return this.fromEmail;
     }
 
+    @Value("${mail.type}")
+    private String mailType;
+
+    public String getMailType() {
+        return mailType;
+    }
+
+    @Value("${smtp.host}")
+    private String smtpHost;
+
+    @Value("${smtp.port}")
+    private String smtpPort;
+
+    @Value("${smtp.username}")
+    private String smtpUsername;
+
+    @Value("${smtp.password}")
+    private String smtpPassword;
+
+    public String getSmtpHost() {
+        return smtpHost;
+    }
+
+    public String getSmtpPort() {
+        return smtpPort;
+    }
+
+    public String getSmtpUsername() {
+        return smtpUsername;
+    }
+
+    public String getSmtpPassword() {
+        return smtpPassword;
+    }
+
     @Bean("freemarkerConfig")
     public FreeMarkerConfigurationFactoryBean getFreeMarkerConfiguration() {
         FreeMarkerConfigurationFactoryBean bean = new FreeMarkerConfigurationFactoryBean();

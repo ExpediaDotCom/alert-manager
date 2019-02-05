@@ -1,6 +1,6 @@
 es:
   index.name: subscription
-  create.index.if.not.found: false
+  create.index.if.not.found: true
   doctype: _doc
   urls: "${es_urls}"
   connection.timeout: 5000

@@ -34,11 +34,11 @@ spec:
             cpu: ${cpu_request}
             memory: ${memory_request}Mi
         env:
-        - name: "HAYSTACK_GRAPHITE_HOST"
+        - name: "AM_GRAPHITE_HOST"
           value: "${graphite_host}"
-        - name: "HAYSTACK_GRAPHITE_PORT"
+        - name: "AM_GRAPHITE_PORT"
           value: "${graphite_port}"
-        - name: "HAYSTACK_GRAPHITE_ENABLED"
+        - name: "AM_GRAPHITE_ENABLED"
           value: "${graphite_enabled}"
         - name: "JAVA_XMS"
           value: "${jvm_memory_limit}m"

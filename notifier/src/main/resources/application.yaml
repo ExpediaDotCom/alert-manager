@@ -9,7 +9,7 @@ kafka:
   topic: alerts
 
 subscription-search:
-  url: http://localhost:8080/subscriptions/search
+  url: http://subscription:8080/subscriptions/search
 
 mail:
   from: from@email.com

@@ -31,9 +31,9 @@
         <!--<query objectName="java.lang:type=Threading" attribute="ThreadCount" resultAlias="jvm.thread"/>-->
     </queries>
     <outputWriter class="org.jmxtrans.agent.GraphitePlainTextTcpOutputWriter">
-        <host>${HAYSTACK_GRAPHITE_HOST:monitoring-influxdb-graphite.kube-system.svc}</host>
-        <port>${HAYSTACK_GRAPHITE_PORT:2003}</port>
-        <enabled>${HAYSTACK_GRAPHITE_ENABLED:true}</enabled>
+        <host>${AM_GRAPHITE_HOST:monitoring-influxdb-graphite.kube-system.svc}</host>
+        <port>${AM_GRAPHITE_PORT:2003}</port>
+        <enabled>${AM_GRAPHITE_ENABLED:true}</enabled>
         <namePrefix>alert-manager-notifier.#hostname#.</namePrefix>
     </outputWriter>
     <collectIntervalInSeconds>60</collectIntervalInSeconds>

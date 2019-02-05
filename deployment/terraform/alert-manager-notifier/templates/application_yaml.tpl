@@ -17,3 +17,10 @@ mail:
 slack:
   url: https://slack.com/api/chat.postMessage
   token: $${SLACK_TOKEN}
+
+rate-limit:
+  enabled: ${rate_limit_enabled}
+  value: 40000
+
+alert-store-es:
+  url: ${es_urls}

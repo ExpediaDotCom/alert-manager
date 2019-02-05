@@ -5,6 +5,8 @@ variable "namespace" {}
 variable "kafka_endpoint" {}
 variable "subscription_search_url" {}
 variable "mail_from" {}
+variable "rate_limit_enabled" {}
+variable "es_urls" {}
 variable "graphite_hostname" {}
 variable "graphite_port" {}
 variable "graphite_enabled" {}

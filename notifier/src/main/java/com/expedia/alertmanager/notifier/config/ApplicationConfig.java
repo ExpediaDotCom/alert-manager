@@ -94,11 +94,8 @@ public class ApplicationConfig {
     private String fromEmail;
 
     @Value("${mail.type}")
+    @Getter
     private String mailType;
-
-    public String getMailType() {
-        return mailType;
-    }
 
     @Value("${smtp.host}")
     @Getter

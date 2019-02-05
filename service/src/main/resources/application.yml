@@ -18,10 +18,10 @@ kafka:
     topic: alerts
 
 alert.store:
-  pluginDirectory: "storage-backends/elasticsearch/target"
+  pluginDirectory: "./storage-backends/"
   plugins:
   - name: elasticsearch
-    jarName: "elasticsearch-store-1.0.0-SNAPSHOT.jar"
+    jarName: "elasticsearch-store.jar"
     conf:
      host: "http://elasticsearch:9200"
      template: ""

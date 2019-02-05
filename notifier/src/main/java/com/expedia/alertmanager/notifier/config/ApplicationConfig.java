@@ -101,32 +101,20 @@ public class ApplicationConfig {
     }
 
     @Value("${smtp.host}")
+    @Getter
     private String smtpHost;
 
     @Value("${smtp.port}")
+    @Getter
     private String smtpPort;
 
     @Value("${smtp.username}")
+    @Getter
     private String smtpUsername;
 
     @Value("${smtp.password}")
+    @Getter
     private String smtpPassword;
-
-    public String getSmtpHost() {
-        return smtpHost;
-    }
-
-    public String getSmtpPort() {
-        return smtpPort;
-    }
-
-    public String getSmtpUsername() {
-        return smtpUsername;
-    }
-
-    public String getSmtpPassword() {
-        return smtpPassword;
-    }
 
     @Bean("freemarkerConfig")
     public FreeMarkerConfigurationFactoryBean getFreeMarkerConfiguration() {

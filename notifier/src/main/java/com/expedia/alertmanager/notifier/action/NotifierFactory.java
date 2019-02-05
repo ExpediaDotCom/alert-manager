@@ -42,7 +42,7 @@ public class NotifierFactory {
                             applicationConfig.getSmtpHost(), applicationConfig.getSmtpPort(),
                             applicationConfig.getSmtpUsername(), applicationConfig.getSmtpPassword());
                 } else {
-                    return new AwsSesNotifier(messageComposer, applicationConfig.getFromEmail(), dispatcher.getEndpoint());
+                    return new AwsSesNotifier(messageComposer, applicationConfig.getFromEmail(), dispatcher);
                 }
             case SLACK:
                 return new SlackNotifier(restTemplate, messageComposer, applicationConfig.getSlackUrl(),

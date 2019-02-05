@@ -19,6 +19,9 @@ slack:
   url: https://slack.com/api/chat.postMessage
   token:
 
+alert-store-es:
+  url: http://elasticsearch:9200
+
 smtp:
   host: localhost
   port: 25

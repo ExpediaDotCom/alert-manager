@@ -18,6 +18,7 @@ package com.expedia.alertmanager.service.conf;
 import com.expedia.alertmanager.model.Alert;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.config.HttpClientConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -61,5 +62,12 @@ public class AppConfig {
     @Bean
     public KafkaTemplate<String, Alert> kafkaTemplate(KafkaConfig kafkaConfig) {
         return new KafkaTemplate<>(producerFactory(kafkaConfig));
+    }
+
+    @Value("${mail.additional-validator-expression:}")
+    private String additionalEmailValidatorExp;
+
+    public String getAdditionalEmailValidatorExp() {
+        return additionalEmailValidatorExp;
     }
 }

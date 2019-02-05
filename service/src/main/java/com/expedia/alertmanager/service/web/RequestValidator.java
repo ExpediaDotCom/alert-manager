@@ -20,15 +20,35 @@ import com.expedia.alertmanager.model.ExpressionTree;
 import com.expedia.alertmanager.model.Operand;
 import com.expedia.alertmanager.model.Operator;
 import com.expedia.alertmanager.model.User;
+import com.expedia.alertmanager.model.util.EmailDispatcherHelper;
+import com.expedia.alertmanager.service.conf.AppConfig;
 import com.expedia.alertmanager.service.model.SubscriptionEntity;
+import org.apache.commons.validator.routines.EmailValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Component
 public class RequestValidator {
+
+    @Autowired
+    private AppConfig appConfig;
+
+    private Optional<Pattern> additionalEmailValidator;
+
+    @PostConstruct
+    public void init() {
+        additionalEmailValidator
+            = StringUtils.isEmpty(appConfig.getAdditionalEmailValidatorExp()) ? Optional.empty() :
+                    Optional.of(Pattern.compile(appConfig.getAdditionalEmailValidatorExp(), Pattern.CASE_INSENSITIVE));
+    }
+
     public void validateUser(User user) {
         Assert.notNull(user, "subscription user can't null");
         Assert.isTrue(!StringUtils.isEmpty(user.getId()), "subscription userId can't empty");
@@ -38,6 +58,19 @@ public class RequestValidator {
 
     public void validateDispatcher(List<Dispatcher> dispatchers) {
         Assert.notEmpty(dispatchers, "subscription dispatchers can't empty");
+        dispatchers.forEach(dispatcher -> {
+            Assert.notNull(dispatcher.getEndpoint(), "dispatcher endpoint can't be null");
+            if (dispatcher.getType() == Dispatcher.Type.EMAIL) {
+                EmailDispatcherHelper.getToEmails(dispatcher).forEach(email -> {
+                    Assert.isTrue(EmailValidator.getInstance().isValid(email),
+                        String.format("invalid email '%s'", email));
+                    additionalEmailValidator.ifPresent(validator -> {
+                        Assert.isTrue(validator.matcher(email).find(),
+                            String.format("email '%s' doesn't confirm to the required pattern", email));
+                    });
+                });
+            }
+        });
     }
 
     public void validateExpression(ExpressionTree expression) {
@@ -57,16 +90,7 @@ public class RequestValidator {
         Assert.isTrue(!StringUtils.isEmpty(operand.getField().getKey()), "Invalid operand field key");
         Assert.isTrue(!StringUtils.isEmpty(operand.getField().getValue()), "Invalid operand field value");
         Assert.isTrue(!operand.getField().getKey().startsWith(SubscriptionEntity.AM_PREFIX),
-            "Invalid operand field key. " + SubscriptionEntity.AM_PREFIX + "is a reserved prefix");
-        assertOperandFor(operand, SubscriptionEntity.QUERY_KEYWORD);
-        assertOperandFor(operand, SubscriptionEntity.LAST_MOD_TIME_KEYWORD);
-        assertOperandFor(operand, SubscriptionEntity.CREATE_TIME_KEYWORD);
-        assertOperandFor(operand, SubscriptionEntity.DISPATCHERS_KEYWORD);
-        assertOperandFor(operand, SubscriptionEntity.USER_KEYWORD);
-    }
-
-    private void assertOperandFor(Operand operand, String queryKeyword) {
-        Assert.isTrue(!operand.getField().getKey().equals(queryKeyword),
-            String.format("%s is a reserved field and can't be used as an operand field key", queryKeyword));
+            String.format("Invalid operand field key '%s'. %s is a reserved prefix",
+                operand.getField().getKey(), SubscriptionEntity.AM_PREFIX));
     }
 }

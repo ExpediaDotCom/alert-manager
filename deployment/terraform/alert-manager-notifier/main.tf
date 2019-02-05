@@ -42,6 +42,8 @@ data "template_file" "config_data" {
     kafka_endpoint = "${var.kafka_endpoint}"
     subscription_search_url = "${var.subscription_search_url}"
     mail_from = "${var.mail_from}"
+    rate_limit_enabled = "${var.rate_limit_enabled}"
+    es_urls = "${var.es_urls}"
   }
 }
 

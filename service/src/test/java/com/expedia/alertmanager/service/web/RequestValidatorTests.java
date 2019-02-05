@@ -15,15 +15,20 @@
  */
 package com.expedia.alertmanager.service.web;
 
+import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.ExpressionTree;
 import com.expedia.alertmanager.model.Operator;
 import com.expedia.alertmanager.model.User;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static com.expedia.alertmanager.service.model.SubscriptionEntity.AM_PREFIX;
 import static com.expedia.alertmanager.service.model.SubscriptionEntity.CREATE_TIME_KEYWORD;
@@ -34,10 +39,16 @@ import static com.expedia.alertmanager.service.web.TestUtil.operand;
 
 public class RequestValidatorTests {
 
+    //Rule needs to be public
     @Rule
-    private ExpectedException thrown = ExpectedException.none();
+    public ExpectedException thrown = ExpectedException.none();
 
     private RequestValidator requestValidator = new RequestValidator();
+
+    @Before
+    public void before() {
+        ReflectionTestUtils.setField(requestValidator, "additionalEmailValidator", Optional.empty());
+    }
 
     @Test
     public void givenNullUser_validateUserShouldFail() {
@@ -67,6 +78,29 @@ public class RequestValidatorTests {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("subscription dispatchers can't empty");
         requestValidator.validateDispatcher(Collections.emptyList());
+    }
+
+    @Test
+    public void givenInvalidEmailInEmailDispatcher_validateDispatchersShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("invalid email 'abc'");
+        Dispatcher emailDispatcher = new Dispatcher();
+        emailDispatcher.setEndpoint("email@email.com, abc");
+        emailDispatcher.setType(Dispatcher.Type.EMAIL);
+        requestValidator.validateDispatcher(Collections.singletonList(emailDispatcher));
+    }
+
+    @Test
+    public void givenUnExpectedEmailInEmailDispatcher_validateDispatchersShouldFail() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("email 'email@email.com' doesn't confirm to the required pattern");
+        Dispatcher emailDispatcher = new Dispatcher();
+        emailDispatcher.setEndpoint("email@email.com");
+        emailDispatcher.setType(Dispatcher.Type.EMAIL);
+        ReflectionTestUtils.setField(requestValidator, "additionalEmailValidator",
+            Optional.of(Pattern.compile("^[A-Z0-9._%+-]+@domain.com$", Pattern.CASE_INSENSITIVE)));
+
+        requestValidator.validateDispatcher(Collections.singletonList(emailDispatcher));
     }
 
     @Test
@@ -125,7 +159,7 @@ public class RequestValidatorTests {
 
     private void assertExpressionOperandName(String operandName) {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(String.format("%s is a reserved field and can't be used as an operand field key",
+        thrown.expectMessage(String.format("Invalid operand field key '%s'. am_ is a reserved prefix",
             operandName));
         ExpressionTree expressionTree = new ExpressionTree();
         expressionTree.setOperator(Operator.AND);

@@ -20,6 +20,7 @@ import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.notifier.action.Notifier;
 import com.expedia.alertmanager.notifier.action.NotifierFactory;
+import com.expedia.alertmanager.notifier.config.ApplicationConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -33,17 +34,33 @@ public class AlertProcessor {
 
     private final NotifierFactory notifierFactory;
     private final SubscriptionService subscriptionService;
+    private final AlertReadService alertsReadService;
+    private final ApplicationConfig applicationConfig;
 
     @Autowired
     public AlertProcessor(NotifierFactory notifierFactory,
-                          SubscriptionService subscriptionService) {
+                          SubscriptionService subscriptionService,
+                          AlertReadService alertsReadService,
+                          ApplicationConfig applicationConfig) {
         this.notifierFactory = notifierFactory;
         this.subscriptionService = subscriptionService;
+        this.alertsReadService = alertsReadService;
+        this.applicationConfig = applicationConfig;
     }
 
     @KafkaListener(topics = "${kafka.topic}")
     public void receive(Alert alert) {
-        log.info("received alert='{}'", alert.toString());
+
+        //default rate limiter to restrict notifications.
+        //only first n number of alerts received on a day are notified, rest are ignored.
+        if (applicationConfig.isRateLimitEnabled()
+            && alertsReadService.getAlertsCountForToday() >= applicationConfig.getRateLimit()) {
+            log.info("ignoring alert='{}' as rate limit {} reached",
+                alert, applicationConfig.getRateLimit());
+            return;
+        }
+
+        log.info("received alert='{}'", alert);
         List<SubscriptionResponse> subscriptionResponses = getSubscriptions(alert);
         log.info("Matching subscriptions='{}'", subscriptionResponses.toString());
         subscriptionResponses.forEach(subscriptionResponse -> {

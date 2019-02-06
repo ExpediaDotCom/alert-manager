@@ -34,7 +34,7 @@
         <host>${AM_GRAPHITE_HOST:monitoring-influxdb-graphite.kube-system.svc}</host>
         <port>${AM_GRAPHITE_PORT:2003}</port>
         <enabled>${AM_GRAPHITE_ENABLED:true}</enabled>
-        <namePrefix>alert-manager-service.#hostname#.</namePrefix>
+        <namePrefix>${GRAPHITE_PREFIX:}alert-manager-service.#hostname#.</namePrefix>
     </outputWriter>
     <collectIntervalInSeconds>60</collectIntervalInSeconds>
 </jmxtrans-agent>

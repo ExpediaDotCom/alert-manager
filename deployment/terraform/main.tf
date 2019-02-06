@@ -30,6 +30,7 @@ module "alert-manager-service" {
   graphite_hostname = "${var.graphite_hostname}"
   graphite_port = "${var.graphite_port}"
   graphite_enabled = "${var.graphite_enabled}"
+  graphite_prefix = "${var.graphite_prefix}"
   env_vars = "${var.alert-manager-service["environment_overrides"]}"
 
   # App
@@ -62,6 +63,7 @@ module "alert-manager-store" {
   graphite_hostname = "${var.graphite_hostname}"
   graphite_port = "${var.graphite_port}"
   graphite_enabled = "${var.graphite_enabled}"
+  graphite_prefix = "${var.graphite_prefix}"
   env_vars = "${var.alert-manager-store["environment_overrides"]}"
 
   # App
@@ -93,6 +95,7 @@ module "alert-manager-notifier" {
   graphite_hostname = "${var.graphite_hostname}"
   graphite_port = "${var.graphite_port}"
   graphite_enabled = "${var.graphite_enabled}"
+  graphite_prefix = "${var.graphite_prefix}"
   env_vars = "${var.alert-manager-notifier["environment_overrides"]}"
 
   # App

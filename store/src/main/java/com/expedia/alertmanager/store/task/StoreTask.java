@@ -204,7 +204,7 @@ public class StoreTask implements Runnable, Closeable {
         final AlertWithId aId = new AlertWithId();
         aId.setId(record.topic() + "-" + record.partition() + "-" + record.offset());
         aId.setAlert(record.value());
-        aId.getAlert().setCreationTime(truncate(aId.getAlert().getCreationTime()));
+        aId.getAlert().setCreationTime(aId.getAlert().getCreationTime());
         return aId;
     }
 
@@ -299,7 +299,4 @@ public class StoreTask implements Runnable, Closeable {
         return new KafkaConsumer<>(props, new StringDeserializer(), new AlertDeserializer());
     }
 
-    private long truncate(long startTime) {
-        return (startTime/1000) * 1000;
-    }
 }

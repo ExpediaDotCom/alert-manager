@@ -116,6 +116,6 @@ class Writer {
     }
 
     private String indexName(final SimpleDateFormat formatter, final long startTime) {
-        return String.format("%s-%s", indexNamePrefix, formatter.format(new Date(startTime)));
+        return String.format("%s-%s", indexNamePrefix, formatter.format(new Date(startTime*1000)));
     }
 }

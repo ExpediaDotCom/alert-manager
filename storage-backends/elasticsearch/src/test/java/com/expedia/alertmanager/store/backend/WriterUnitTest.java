@@ -154,7 +154,7 @@ public class WriterUnitTest {
     private AlertWithId createAlertWithId() {
         final Alert alert = new Alert();
         alert.setName("a1");
-        alert.setCreationTime(System.currentTimeMillis());
+        alert.setCreationTime(System.currentTimeMillis()/1000);
 
         final Map<String, String> labels = Collections.singletonMap("service", "svc1");
         alert.setLabels(labels);

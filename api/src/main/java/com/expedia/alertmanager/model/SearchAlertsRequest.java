@@ -26,7 +26,14 @@ import java.util.Map;
 @ToString
 @EqualsAndHashCode
 public class SearchAlertsRequest {
+    /**
+     * from time in epoch seconds.
+     */
     private long from;
+
+    /**
+     * to time in epoch seconds.
+     */
     private long to;
     private Map<String, String> labels;
     private int size;

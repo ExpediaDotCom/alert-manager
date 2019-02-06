@@ -110,8 +110,6 @@ public class AppIntegrationTest {
             Assert.assertEquals(response.getHits().getHits().length, 1);
             final Map<String, Object> alert = response.getHits().getHits()[0].getSourceAsMap();
             Assert.assertEquals("a1", alert.get("name") );
-            Assert.assertTrue("timestamp should be truncated to seconds",
-                    Long.parseLong(alert.get("startTime").toString()) % 1000 == 0);
             Assert.assertEquals(svc, ((Map<String, String>) alert.get("labels")).get("service"));
             Assert.assertEquals("5", ((Map<String, String>) alert.get("annotations")).get("observedValue"));
             Assert.assertEquals("10", ((Map<String, String>) alert.get("annotations")).get("expectedValue"));

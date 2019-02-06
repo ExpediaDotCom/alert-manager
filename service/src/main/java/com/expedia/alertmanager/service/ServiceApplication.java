@@ -15,6 +15,7 @@
  */
 package com.expedia.alertmanager.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -23,12 +24,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 @SpringBootApplication
+@Slf4j
 public class ServiceApplication {
 
     public static void main(String[] args) {
         try {
             SpringApplication.run(ServiceApplication.class, args);
         } catch (Exception e) {
+            log.error("Exception while running app. Exiting.", e);
             System.exit(1);
         }
     }

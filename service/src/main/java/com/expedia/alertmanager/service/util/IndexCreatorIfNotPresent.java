@@ -48,7 +48,7 @@ public class IndexCreatorIfNotPresent implements ApplicationListener<Application
                     docObject.add("properties", ElasticUtil.buildMappingsJson());
                     JsonObject mapObject = new JsonObject();
                     // Renaming this as this is _doc is not supported for ES version < 6.2
-                    mapObject.add("doc", docObject);
+                    mapObject.add(elasticSearchConfig.getDocType(), docObject);
 
                     CreateIndex createIndex = new CreateIndex.Builder(elasticSearchConfig.getIndexName())
                         .settings(settings)

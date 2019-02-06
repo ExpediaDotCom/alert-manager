@@ -26,7 +26,11 @@ import org.springframework.web.filter.CorsFilter;
 public class ServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ServiceApplication.class, args);
+        try {
+            SpringApplication.run(ServiceApplication.class, args);
+        } catch (Exception e) {
+            System.exit(1);
+        }
     }
 
     @Bean

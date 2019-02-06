@@ -22,6 +22,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class NotifierApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(NotifierApplication.class, args);
+        try {
+            SpringApplication.run(NotifierApplication.class, args);
+        } catch(Exception e) {
+            System.exit(1);
+        }
     }
 }

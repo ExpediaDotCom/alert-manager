@@ -29,5 +29,5 @@ alert-store-es:
 smtp:
   host: localhost
   port: 25
-  username: ${SMTP_USERNAME}
-  password: ${SMTP_PASSWORD}
+  username: $${SMTP_USERNAME}
+  password: $${SMTP_PASSWORD}

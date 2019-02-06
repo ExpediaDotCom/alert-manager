@@ -39,6 +39,16 @@ spec:
             secretKeyRef:
               name: alert-manager-notifier-secret
               key: slack_token
+        - name: "SMTP_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: alert-manager-notifier-secret
+              key: smtp_password
+        - name: "SMTP_USERNAME"
+          valueFrom:
+            secretKeyRef:
+              name: alert-manager-notifier-secret
+              key: smtp_username
         - name: "AM_GRAPHITE_HOST"
           value: "${graphite_host}"
         - name: "AM_GRAPHITE_PORT"

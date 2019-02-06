@@ -7,6 +7,7 @@ variable "es_urls" {}
 variable "graphite_hostname" {}
 variable "graphite_port" {}
 variable "graphite_enabled" {}
+variable "graphite_prefix" {}
 
 variable "enabled" {}
 

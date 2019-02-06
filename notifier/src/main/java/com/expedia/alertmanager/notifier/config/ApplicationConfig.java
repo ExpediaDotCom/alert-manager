@@ -93,6 +93,26 @@ public class ApplicationConfig {
     @Getter
     private String fromEmail;
 
+    @Value("${mail.type}")
+    @Getter
+    private String mailType;
+
+    @Value("${smtp.host}")
+    @Getter
+    private String smtpHost;
+
+    @Value("${smtp.port}")
+    @Getter
+    private String smtpPort;
+
+    @Value("${smtp.username}")
+    @Getter
+    private String smtpUsername;
+
+    @Value("${smtp.password}")
+    @Getter
+    private String smtpPassword;
+
     @Bean("freemarkerConfig")
     public FreeMarkerConfigurationFactoryBean getFreeMarkerConfiguration() {
         FreeMarkerConfigurationFactoryBean bean = new FreeMarkerConfigurationFactoryBean();

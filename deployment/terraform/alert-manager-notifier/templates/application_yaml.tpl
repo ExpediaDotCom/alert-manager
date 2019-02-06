@@ -13,6 +13,7 @@ subscription-search:
 
 mail:
   from: ${mail_from}
+  type: aws-ses
 
 slack:
   url: https://slack.com/api/chat.postMessage
@@ -24,3 +25,9 @@ rate-limit:
 
 alert-store-es:
   url: ${es_urls}
+
+smtp:
+  host: localhost
+  port: 25
+  username: ${SMTP_USERNAME}
+  password: ${SMTP_PASSWORD}

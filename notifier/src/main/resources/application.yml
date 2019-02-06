@@ -1,22 +1,29 @@
 kafka:
   consumer:
-    bootstrap.servers: localhost:9092
+    bootstrap.servers: kafkasvc:9092
     group.id: am_notifier
-    auto.offset.reset: earliest
+    auto.offset.reset: latest
     session.timeout.ms: 30000
     heartbeat.interval.ms: 10000
     request.timeout.ms: 40000
   topic: alerts
 
 subscription-search:
-  url: http://localhost:8080/subscriptions/search
+  url: http://subscription:8080/subscriptions/search
 
 mail:
   from: from@email.com
+  type: smtp
 
 slack:
   url: https://slack.com/api/chat.postMessage
   token:
 
 alert-store-es:
-  url: http://localhost:9200
+  url: http://elasticsearch:9200
+
+smtp:
+  host: localhost
+  port: 25
+  username: ${SMTP_USERNAME:""}
+  password: ${SMTP_PASSWORD:""}

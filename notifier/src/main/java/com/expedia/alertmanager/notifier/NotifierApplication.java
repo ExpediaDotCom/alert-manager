@@ -15,13 +15,20 @@
  */
 package com.expedia.alertmanager.notifier;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
+@Slf4j
 public class NotifierApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(NotifierApplication.class, args);
+        try {
+            SpringApplication.run(NotifierApplication.class, args);
+        } catch(Exception e) {
+            log.error("Exception while running app. Exiting.", e);
+            System.exit(1);
+        }
     }
 }

@@ -26,5 +26,3 @@ alert.store:
      host: "http://elasticsearch:9200"
      template: ""
 
-mail:
-  additional-validator-expression: ^[A-Z0-9._%+-]+@domain.com$

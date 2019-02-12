@@ -17,13 +17,13 @@ mail:
 
 slack:
   url: https://slack.com/api/chat.postMessage
-  token:
+  token: ${SLACK_TOKEN:}
 
 alert-store-es:
   url: http://elasticsearch:9200
 
 smtp:
-  host: localhost
+  host: ${SMTP_HOST:localhost}
   port: 25
   username: ${SMTP_USERNAME:""}
   password: ${SMTP_PASSWORD:""}

@@ -128,11 +128,11 @@ public class ApplicationConfig {
     @Getter
     private String slackToken;
 
-    @Value("${rate-limit.enabled:false}")
+    @Value("${alert.rate-limit.enabled:false}")
     @Getter
     private boolean rateLimitEnabled;
 
-    @Value("${rate-limit.value:0}")
+    @Value("${alert.rate-limit.value:0}")
     @Getter
     private long rateLimit;
 
@@ -141,4 +141,8 @@ public class ApplicationConfig {
     @Value("${alert-store-es.url}")
     @Getter
     private String alertStoreEsUrl;
+
+    @Value("${alert.expiry-time-in-sec:}")
+    @Getter
+    private Long expiryTimeInSec;
 }

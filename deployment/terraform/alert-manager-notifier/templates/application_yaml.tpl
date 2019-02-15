@@ -19,9 +19,11 @@ slack:
   url: https://slack.com/api/chat.postMessage
   token: $${SLACK_TOKEN}
 
-rate-limit:
-  enabled: ${rate_limit_enabled}
-  value: 40000
+alert:
+  rate-limit:
+    enabled: ${rate_limit_enabled}
+    value: 40000
+  expiry-time-in-sec: 600
 
 alert-store-es:
   url: ${es_urls}
@@ -31,3 +33,5 @@ smtp:
   port: 25
   username: $${SMTP_USERNAME}
   password: $${SMTP_PASSWORD}
+
+

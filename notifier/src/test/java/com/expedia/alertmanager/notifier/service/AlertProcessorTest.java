@@ -75,6 +75,7 @@ public class AlertProcessorTest {
         given(subscriptionService.getSubscriptions(anyMap())).willReturn(Arrays.asList(subscriptionResponse));
         given(notifierFactory.getNotifier(emailDispatcher)).willReturn(notifier);
         given(notifierFactory.getNotifier(slackDispatcher)).willReturn(notifier);
+        given(applicationConfig.getExpiryTimeInSec()).willReturn(null);
         Alert alert = new Alert();
         alert.setLabels(Collections.emptyMap());
         alertProcessor.receive(alert);
@@ -86,6 +87,7 @@ public class AlertProcessorTest {
         when(applicationConfig.isRateLimitEnabled()).thenReturn(true);
         when(applicationConfig.getRateLimit()).thenReturn(10L);
         when(alertsReadService.getAlertsCountForToday()).thenReturn(10L);
+        given(applicationConfig.getExpiryTimeInSec()).willReturn(null);
         Dispatcher emailDispatcher = new Dispatcher();
         emailDispatcher.setType(Dispatcher.Type.EMAIL);
         emailDispatcher.setEndpoint("email@email.com");
@@ -100,6 +102,30 @@ public class AlertProcessorTest {
         Alert alert = new Alert();
         alert.setLabels(Collections.emptyMap());
         alertProcessor.receive(alert);
+        verify(notifier, times(0)).notify(alert);
+    }
+
+    @Test
+    public void whenDeprecatedAlertIsReceived_noneOfTheNotifiersAreInvoked() {
+        Dispatcher emailDispatcher = new Dispatcher();
+        emailDispatcher.setType(Dispatcher.Type.EMAIL);
+        emailDispatcher.setEndpoint("email@email.com");
+        Dispatcher slackDispatcher = new Dispatcher();
+        emailDispatcher.setType(Dispatcher.Type.SLACK);
+        emailDispatcher.setEndpoint("#channel");
+        SubscriptionResponse subscriptionResponse = new SubscriptionResponse();
+        subscriptionResponse.setDispatchers(Arrays.asList(emailDispatcher, slackDispatcher));
+        given(subscriptionService.getSubscriptions(anyMap())).willReturn(Arrays.asList(subscriptionResponse));
+        given(notifierFactory.getNotifier(emailDispatcher)).willReturn(notifier);
+        given(notifierFactory.getNotifier(slackDispatcher)).willReturn(notifier);
+        Alert alert = new Alert();
+        alert.setLabels(Collections.emptyMap());
+        //expiry time set to 5 min
+        given(applicationConfig.getExpiryTimeInSec()).willReturn(300l);
+        //set creation time as 0 to consider as an expired one.
+        alert.setCreationTime(0);
+        alertProcessor.receive(alert);
+        //no notifiers are invoked
         verify(notifier, times(0)).notify(alert);
     }
 }

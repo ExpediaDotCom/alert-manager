@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -51,6 +52,12 @@ public class AlertProcessor {
     @KafkaListener(topics = "${kafka.topic}")
     public void receive(Alert alert) {
 
+        if (anExpiredAlert(alert.getCreationTime())) {
+            log.info("ignoring alert='{}' as it is not a recent one",
+                alert);
+            return;
+        }
+
         //default rate limiter to restrict notifications.
         //only first n number of alerts received on a day are notified, rest are ignored.
         if (applicationConfig.isRateLimitEnabled()
@@ -70,6 +77,13 @@ public class AlertProcessor {
                 notifier.notify(alert);
             });
         });
+    }
+
+    private boolean anExpiredAlert(long creationTime) {
+        if (applicationConfig.getExpiryTimeInSec() != null) {
+            return (System.currentTimeMillis() / 1000 - creationTime) > applicationConfig.getExpiryTimeInSec();
+        }
+        return false;
     }
 
     private Notifier getNotifier(Dispatcher dispatcher) {

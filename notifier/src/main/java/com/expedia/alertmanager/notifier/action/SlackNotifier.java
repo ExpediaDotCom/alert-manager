@@ -19,6 +19,7 @@ import com.expedia.alertmanager.model.Alert;
 import com.expedia.alertmanager.notifier.builder.MessageComposer;
 import com.expedia.alertmanager.notifier.model.SlackMessage;
 import com.google.gson.Gson;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -58,12 +59,18 @@ public class SlackNotifier implements Notifier {
         HttpEntity<String> entity = new HttpEntity<>(gson.toJson(slackMessage), headers);
         try {
             ResponseEntity responseEntity =
-                restTemplate.exchange(url, HttpMethod.POST, entity, ResponseEntity.class);
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                restTemplate.exchange(url, HttpMethod.POST, entity, SlackResponse.class);
+            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
                 log.error("Slack notify failed");
             }
         } catch (HttpClientErrorException ex) {
             log.error("Slack invocation failed", ex);
         }
+    }
+
+    @Data
+    static class SlackResponse {
+        private String ok;
+        private String error;
     }
 }

@@ -136,12 +136,6 @@ public class ApplicationConfig {
     @Getter
     private long rateLimit;
 
-    //FIXME - This is a temp config.
-    //AM-notifier app shouldn't directly invoke alert store instead it should use AM-service to query alerts
-    @Value("${alert-store-es.url}")
-    @Getter
-    private String alertStoreEsUrl;
-
     @Value("${alert.expiry-time-in-sec:}")
     @Getter
     private Long expiryTimeInSec;

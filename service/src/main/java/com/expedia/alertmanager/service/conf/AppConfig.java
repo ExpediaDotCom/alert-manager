@@ -16,8 +16,6 @@
 package com.expedia.alertmanager.service.conf;
 
 import com.expedia.alertmanager.model.Alert;
-import io.searchbox.client.JestClientFactory;
-import io.searchbox.client.config.HttpClientConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,34 +23,8 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 
-import java.util.concurrent.TimeUnit;
-
 @Configuration
 public class AppConfig {
-
-    @Bean
-    JestClientFactory clientFactory(ElasticSearchConfig elasticSearchConfig) {
-        JestClientFactory factory = new JestClientFactory();
-        HttpClientConfig.Builder builder =
-            new HttpClientConfig.Builder(elasticSearchConfig.getUrls())
-                .multiThreaded(true)
-                .discoveryEnabled(false)
-                .connTimeout((int) elasticSearchConfig.getConnectionTimeout())
-                .maxConnectionIdleTime(elasticSearchConfig.getMaxConnectionIdleTime(),
-                    TimeUnit.SECONDS)
-                .maxTotalConnection(elasticSearchConfig.getMaxTotalConnection())
-                .readTimeout(elasticSearchConfig.getReadTimeout())
-                .requestCompressionEnabled(elasticSearchConfig.isRequestCompression())
-                .discoveryFrequency(1L, TimeUnit.MINUTES);
-
-        if (elasticSearchConfig.getUsername() != null
-                        && elasticSearchConfig.getPassword() != null) {
-            builder.defaultCredentials(elasticSearchConfig.getUsername(), elasticSearchConfig.getPassword());
-        }
-
-        factory.setHttpClientConfig(builder.build());
-        return factory;
-    }
 
     @Bean
     public ProducerFactory<String, Alert> producerFactory(KafkaConfig kafkaConfig) {

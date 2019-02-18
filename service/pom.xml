@@ -86,6 +86,16 @@
             <artifactId>springfox-swagger-ui</artifactId>
             <version>${swagger.version}</version>
         </dependency>
+
+        <!--aws -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>vc.inreach.aws</groupId>
+            <artifactId>aws-signing-request-interceptor</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

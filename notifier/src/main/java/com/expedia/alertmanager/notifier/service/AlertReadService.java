@@ -15,43 +15,60 @@
  */
 package com.expedia.alertmanager.notifier.service;
 
-import com.expedia.alertmanager.notifier.config.ApplicationConfig;
-import lombok.Data;
+import com.expedia.alertmanager.notifier.config.ElasticSearchConfig;
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestClientFactory;
+import io.searchbox.core.Count;
+import io.searchbox.core.CountResult;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@Slf4j
 @Component
 public class AlertReadService {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private final RestTemplate restTemplate;
-    private final ApplicationConfig applicationConfig;
+    private final ElasticSearchConfig elasticSearchConfig;
+    private final JestClientFactory clientFactory;
 
     @Autowired
-    public AlertReadService(RestTemplate restTemplate, ApplicationConfig applicationConfig) {
+    public AlertReadService(RestTemplate restTemplate, ElasticSearchConfig elasticSearchConfig,
+                            JestClientFactory clientFactory) {
         this.restTemplate = restTemplate;
-        this.applicationConfig = applicationConfig;
+        this.elasticSearchConfig = elasticSearchConfig;
+        this.clientFactory = clientFactory;
     }
 
+    //FIXME - AM notifier shouldn't directly invoke ES for alerts. All store interactions should go via AM store module.
+    @Deprecated
     public long getAlertsCountForToday() {
-        //TODO - We need to invoke AM-Service api instead of directly invoking ES to get the count of alerts.
-        ResponseEntity<CountResponse> countResponse =
-            restTemplate.getForEntity(getCountUrl(applicationConfig.getAlertStoreEsUrl()), CountResponse.class);
-        return countResponse.getBody().count;
-    }
-
-    private String getCountUrl(String alertStoreEsUrl) {
-        return String.format(alertStoreEsUrl + "/alerts-%s/_count", dateFormat.format(new Date()));
-    }
-
-    @Data
-    private static class CountResponse {
-        public CountResponse() {}
-        private long count;
+        val client = clientFactory.getObject();
+        val count = new Count.Builder()
+            .addIndex(String.format("alerts-%s", dateFormat.format(new Date())))
+            .addType(elasticSearchConfig.getDocType())
+            .build();
+        try {
+            val result = client.execute(count);
+            return result.getCount().longValue();
+        }
+        catch (Exception e) {
+            log.error("Error while finding total alert count", e);
+            throw new RuntimeException(e);
+        }
+        finally {
+            try {
+                client.close();
+            } catch (IOException e) {
+                log.error("Error while closing connection", e);
+            }
+        }
     }
 }

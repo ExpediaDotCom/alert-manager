@@ -1,12 +1,14 @@
 es:
   index.name: subscription
   create.index.if.not.found: true
-  doctype: _doc
+  doctype: details
   urls: "${es_urls}"
   connection.timeout: 5000
   max.connection.idletime: 1000
   max.total.connection: 1000
   read.timeout: 1000
+  aws-iam-auth-required: ${es_aws_iam_auth_required}
+  aws-region: ${es_aws_region}
 
 kafka:
   producer:
@@ -25,6 +27,8 @@ alert.store:
     conf:
      host: "${es_urls}"
      template: ""
+     aws-iam-auth-required: ${es_aws_iam_auth_required}
+     aws-region: ${es_aws_region}
 
 mail:
   additional-validator-expression: "${additional_email_validator_expression}"

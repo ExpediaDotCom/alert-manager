@@ -36,6 +36,8 @@ module "alert-manager-service" {
   # App
   kafka_endpoint = "${local.kafka_endpoint}"
   es_urls = "${var.alert-manager-service["es_urls"]}"
+  es_aws_iam_auth_required = "${var.alert-manager-service["es_aws_iam_auth_required"]}"
+  es_aws_region = "${var.alert-manager-service["es_aws_region"]}"
   additional_email_validator_expression = "${var.alert-manager-service["additional_email_validator_expression"]}"
 }
 
@@ -69,6 +71,8 @@ module "alert-manager-store" {
   # App
   kafka_endpoint = "${local.kafka_endpoint}"
   es_urls = "${var.alert-manager-store["es_urls"]}"
+  es_aws_iam_auth_required = "${var.alert-manager-store["es_aws_iam_auth_required"]}"
+  es_aws_region = "${var.alert-manager-store["es_aws_region"]}"
 }
 
 module "alert-manager-notifier" {
@@ -102,6 +106,10 @@ module "alert-manager-notifier" {
   kafka_endpoint = "${local.kafka_endpoint}"
   subscription_search_url = "${var.alert-manager-notifier["subscription_search_url"]}"
   mail_from = "${var.alert-manager-notifier["mail_from"]}"
-  rate_limit_enabled = "${var.alert-manager-notifier["rate_limit_enabled"]}"
+  alert_rate_limit_enabled = "${var.alert-manager-notifier["alert_rate_limit_enabled"]}"
+  alert_rate_limit_value = "${var.alert-manager-notifier["alert_rate_limit_value"]}"
+  alert_expiry_time_in_sec = "${var.alert-manager-notifier["alert_expiry_time_in_sec"]}"
   es_urls = "${var.alert-manager-notifier["es_urls"]}"
+  es_aws_iam_auth_required = "${var.alert-manager-notifier["es_aws_iam_auth_required"]}"
+  es_aws_region = "${var.alert-manager-notifier["es_aws_region"]}"
 }

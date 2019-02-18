@@ -4,6 +4,8 @@ variable "replicas" {}
 variable "namespace" {}
 variable "kafka_endpoint" {}
 variable "es_urls" {}
+variable "es_aws_iam_auth_required" {}
+variable "es_aws_region" {}
 variable "graphite_hostname" {}
 variable "graphite_port" {}
 variable "graphite_enabled" {}

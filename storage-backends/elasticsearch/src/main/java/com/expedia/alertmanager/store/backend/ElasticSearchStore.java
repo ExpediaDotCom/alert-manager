@@ -92,10 +92,10 @@ public class ElasticSearchStore implements AlertStore {
     }
 
     private void addAWSRequestSignerInterceptorIfRequired(RestClientBuilder clientBuilder, Map<String, Object> config) {
-        val needsIAMAuth = Boolean.valueOf(config.getOrDefault("es.aws-iam-auth-required",
+        val needsIAMAuth = Boolean.valueOf(config.getOrDefault("aws-iam-auth-required",
             "false").toString());
         if (needsIAMAuth) {
-            val awsRegion = config.get("es.aws_region").toString();
+            val awsRegion = config.get("aws-region").toString();
             Optional<AWSSigningRequestInterceptor> signingInterceptor = getAWSRequestSignerInterceptor(awsRegion);
             signingInterceptor.ifPresent(
                 interceptor -> clientBuilder.setHttpClientConfigCallback(

@@ -43,8 +43,12 @@ data "template_file" "config_data" {
     kafka_endpoint = "${var.kafka_endpoint}"
     subscription_search_url = "${var.subscription_search_url}"
     mail_from = "${var.mail_from}"
-    rate_limit_enabled = "${var.rate_limit_enabled}"
+    alert_rate_limit_enabled = "${var.alert_rate_limit_enabled}"
+    alert_rate_limit_value = "${var.alert_rate_limit_value}"
+    alert_expiry_time_in_sec = "${var.alert_expiry_time_in_sec}"
     es_urls = "${var.es_urls}"
+    es_aws_iam_auth_required = "${var.es_aws_iam_auth_required}"
+    es_aws_region = "${var.es_aws_region}"
   }
 }
 

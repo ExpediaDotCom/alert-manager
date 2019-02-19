@@ -4,6 +4,8 @@ plugin:
   jar.name: "elasticsearch-store.jar"
   conf:
    host: "${es_urls}"
+   aws-iam-auth-required: ${es_aws_iam_auth_required}
+   aws-region: ${es_aws_region}
 kafka:
   topic: alerts
   stream.threads: 4

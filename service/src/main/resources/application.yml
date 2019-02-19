@@ -25,4 +25,6 @@ alert.store:
     conf:
      host: "http://elasticsearch:9200"
      template: ""
+     aws-iam-auth-required: false
+     aws-region: ""
 

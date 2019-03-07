@@ -28,3 +28,15 @@ alert.store:
      aws-iam-auth-required: false
      aws-region: ""
 
+spring:
+  management:
+    context-path: "/admin"
+    metrics:
+      export:
+        jmx:
+          domain: spring
+      enable:
+        jvm: false
+        tomcat: false
+        system: false
+        process: false

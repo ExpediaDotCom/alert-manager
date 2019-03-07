@@ -55,7 +55,7 @@
         <snakeyaml.version>1.23</snakeyaml.version>
         <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
         <spring-kafka.version>2.2.0.RELEASE</spring-kafka.version>
-        <aws.sdk.version>1.11.512</aws.sdk.version>
+        <aws.sdk.version>1.11.126</aws.sdk.version>
         <ognl.version>3.2.6</ognl.version>
         <freemarker.version>2.3.28</freemarker.version>
         <kafka-version>2.0.0</kafka-version>

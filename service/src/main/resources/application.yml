@@ -27,16 +27,15 @@ kafka:
     value.serializer: org.springframework.kafka.support.serializer.JsonSerializer
     request.timeout.ms: 40000
     topic: alerts
-
-spring:
-  management:
-    context-path: "/admin"
-    metrics:
-      export:
-        jmx:
-          domain: spring
-      enable:
-        jvm: false
-        tomcat: false
-        system: false
-        process: false
+    
+management:
+  context-path: "/admin"
+  metrics:
+    export:
+      jmx:
+        domain: spring
+    enable:
+      jvm: false
+      tomcat: false
+      system: false
+      process: false

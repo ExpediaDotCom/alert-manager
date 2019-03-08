@@ -25,6 +25,8 @@
                resultAlias="jvm.nonHeapMemoryUsage.used"/>
         <query objectName="java.lang:type=Memory" attribute="NonHeapMemoryUsage" key="committed"
                resultAlias="jvm.nonHeapMemoryUsage.committed"/>
+        <query objectName="java.lang:type=Threading" attribute="ThreadCount" resultAlias="jvm.thread"/>
+        <query objectName="java.lang:type=OperatingSystem" attribute="SystemCpuLoad" resultAlias="jvm.cpu.usage"/>
     </queries>
     <outputWriter class="org.jmxtrans.agent.GraphitePlainTextTcpOutputWriter">
         <host>${HAYSTACK_GRAPHITE_HOST:monitoring-influxdb-graphite.kube-system.svc}</host>

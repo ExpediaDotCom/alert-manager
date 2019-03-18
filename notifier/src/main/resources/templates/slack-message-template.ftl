@@ -1,6 +1,6 @@
 Hello!
 
-You have one alert generated with below details.
+You have one alert.
 
 <#if alert.labels?has_content>
 Labels:

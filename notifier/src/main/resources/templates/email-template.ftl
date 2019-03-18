@@ -5,20 +5,26 @@
 <body>
 Hello!
 <p>
-    You have one alert generated with below details.
+    You have one alert.
+    <#if alert.labels?has_content>
     <p>Labels: <br/>
         <ul>
         <#list alert.labels?keys as prop>
-            <li>${prop} = ${alert.labels[prop]}</li>
+            <#if prop?has_content>
+            <li>${prop} = ${alert.labels[prop]!""}</li>
+            </#if>
         </#list>
         </ul>
     </p>
+    </#if>
     <#if alert.annotations?has_content>
     <p>
         Annotations: <br/>
         <ul>
         <#list alert.annotations?keys as prop>
-            <li>${prop} = ${alert.annotations[prop]}</li>
+            <#if prop?has_content>
+            <li>${prop} = ${alert.annotations[prop]!""}</li>
+            </#if>
         </#list>
         </ul>
     </p>

@@ -1,18 +1,24 @@
 Hello!
 
-You have one alert generated with below details.
+You have one alert.
 
+<#if alert.labels?has_content>
 Labels:
+   <#list alert.labels?keys as prop>
+      <#if prop?has_content>
+         ${prop} = ${(alert.labels[prop])!""}
+      </#if>
+   </#list>
+</#if>
 
-<#list alert.labels?keys as prop>
-   ${prop} = ${alert.labels[prop]}
-</#list>
 <#if alert.annotations?has_content>
 
 Annotations:
-<#list alert.annotations?keys as prop>
-   ${prop} = ${alert.annotations[prop]}
-</#list>
+   <#list alert.annotations?keys as prop>
+      <#if prop?has_content>
+         ${prop} = ${(alert.annotations[prop])!""}
+      </#if>
+   </#list>
 </#if>
 
 <#if alert.expectedValue?has_content>

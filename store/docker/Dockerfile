@@ -12,10 +12,11 @@ RUN tar xzf dockerize.tar.gz
 RUN chmod +x dockerize
 
 RUN mkdir -p ${APP_HOME}
-RUN mkdir -p ${APP_HOME}/storage-backends
+RUN mkdir -p ${APP_HOME}/store/
+RUN mkdir -p ${APP_HOME}/store/storage-backends
 
 COPY target/alert-manager-store-1.0.0-SNAPSHOT.jar ${APP_HOME}/alert-manager-store.jar
-COPY storage-backends ${APP_HOME}/storage-backends
+COPY storage-backends ${APP_HOME}/store/storage-backends
 COPY docker/start-app.sh ${APP_HOME}/
 COPY docker/jmxtrans-agent.xml ${APP_HOME}/
 

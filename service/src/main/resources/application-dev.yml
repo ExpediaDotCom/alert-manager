@@ -1,0 +1,10 @@
+alert.store:
+  pluginDirectory: "storage-backends/elasticsearch/target"
+  plugins:
+  - name: elasticsearch
+    jarName: "elasticsearch-store-1.0.0-SNAPSHOT.jar"
+    conf:
+         host: "http://elasticsearch:9200"
+         template: ""
+         aws-iam-auth-required: false
+         aws-region: ""

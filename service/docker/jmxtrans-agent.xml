@@ -27,6 +27,28 @@
                resultAlias="jvm.nonHeapMemoryUsage.committed"/>
         <query objectName="java.lang:type=Threading" attribute="ThreadCount" resultAlias="jvm.thread"/>
         <query objectName="java.lang:type=OperatingSystem" attribute="SystemCpuLoad" resultAlias="jvm.cpu.usage"/>
+      
+        <!-- HTTP Status -->
+        <!-- GET Requests -->
+        <query objectName="spring:name=httpServerRequests.exception.None.method.GET.outcome.SUCCESS.status.200.uri./subscriptions/{id}" attribute="Count"
+               resultAlias="http.get.200Count"/>
+        <query objectName="spring:name=httpServerRequests.exception.RuntimeException.method.GET.outcome.SERVER_ERROR.status.500.uri./subscriptions/{id}" attribute="Count"
+               resultAlias="http.get.500Count"/>
+        <!-- POST Requests -->
+        <query objectName="spring:name=httpServerRequests.exception.None.method.POST.outcome.SUCCESS.status.200.uri./subscriptions" attribute="Count"
+               resultAlias="http.post.201Count"/>
+        <query objectName="spring:name=httpServerRequests.exception.None.method.POST.outcome.SUCCESS.status.200.uri./subscriptions/search" attribute="Count"
+               resultAlias="http.post.201Count"/>
+        <query objectName="spring:name=httpServerRequests.exception.IllegalArgumentException.method.POST.outcome.SERVER_ERROR.status.500.uri./subscriptions" attribute="Count"
+               resultAlias="http.post.500Count"/>
+      <query objectName="spring:name=httpServerRequests.exception.IllegalArgumentException.method.POST.outcome.SERVER_ERROR.status.500.uri./subscriptions/search" attribute="Count"
+               resultAlias="http.post.500Count"/>
+        <!-- PUT Requests -->
+        <query objectName="spring:name=spring:name=httpServerRequests.exception.None.method.PUT.outcome.SUCCESS.status.200.uri./subscriptions" attribute="Count"
+               resultAlias="http.put.500Count"/>
+
+    </queries>
+  
     </queries>
     <outputWriter class="org.jmxtrans.agent.GraphitePlainTextTcpOutputWriter">
         <host>${AM_GRAPHITE_HOST:monitoring-influxdb-graphite.kube-system.svc}</host>

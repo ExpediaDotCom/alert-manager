@@ -27,6 +27,14 @@
                resultAlias="jvm.nonHeapMemoryUsage.committed"/>
         <query objectName="java.lang:type=Threading" attribute="ThreadCount" resultAlias="jvm.thread"/>
         <query objectName="java.lang:type=OperatingSystem" attribute="SystemCpuLoad" resultAlias="jvm.cpu.usage"/>
+      
+        <!-- kafka consumer metrics -->
+        <query objectName="kafka.consumer:type=consumer-metrics,client-id=*" attribute="request-rate" resultAlias="kafka-consumer-%client-id%.request.rate"/>
+        <query objectName="kafka.consumer:type=consumer-metrics,client-id=*" attribute="response-rate" resultAlias="kafka-consumer-%client-id%.response.rate"/>
+        <query objectName="kafka.consumer:type=consumer-metrics,client-id=*" attribute="incoming-byte-rate" resultAlias="kafka-consumer-%client-id%.incoming-byte.rate"/>
+        <query objectName="kafka.consumer:type=consumer-fetch-manager-metrics,client-id=*" attribute="records-lag-max" resultAlias="kafka-consumer-%client-id%.records-lag.max"/>
+        <query objectName="kafka.consumer:type=consumer-fetch-manager-metrics,client-id=*" attribute="records-consumed-rate" resultAlias="kafka-consumer-%client-id%.records-consumed.rate"/>
+      
     </queries>
     <outputWriter class="org.jmxtrans.agent.GraphitePlainTextTcpOutputWriter">
         <host>${HAYSTACK_GRAPHITE_HOST:monitoring-influxdb-graphite.kube-system.svc}</host>

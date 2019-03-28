@@ -44,7 +44,7 @@
         <query objectName="spring:name=httpServerRequests.exception.IllegalArgumentException.method.POST.outcome.SERVER_ERROR.status.500.uri./subscriptions/search" attribute="Count"
                resultAlias="http.post.500Count"/>
         <!-- PUT Requests -->
-        <query objectName="spring:name=spring:name=httpServerRequests.exception.None.method.PUT.outcome.SUCCESS.status.200.uri./subscriptions" attribute="Count"
+        <query objectName="spring:name=httpServerRequests.exception.None.method.PUT.outcome.SUCCESS.status.200.uri./subscriptions" attribute="Count"
                resultAlias="http.put.500Count"/>
     </queries> 
   

@@ -18,11 +18,11 @@ package com.expedia.alertmanager.notifier.action;
 import com.expedia.alertmanager.model.Alert;
 import com.expedia.alertmanager.notifier.builder.MessageComposer;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -38,7 +38,8 @@ public class EmailNotifier implements Notifier {
     private MessageComposer emailComposer;
 
     public EmailNotifier(MessageComposer emailComposer, String from, String to,
-                         String host, String port, String username, String password) {
+                         String host, String port, String username, String password,
+                         boolean startTlsEnabled) {
         this.emailComposer = emailComposer;
         this.from = from;
         this.to = to;
@@ -48,7 +49,25 @@ public class EmailNotifier implements Notifier {
         properties.put("mail.smtp.port", port);
         properties.put("mail.smtp.username", username);
         properties.put("mail.smtp.password", password);
-        session = Session.getDefaultInstance(properties, null);
+        properties.put("mail.smtp.starttls.enable", startTlsEnabled ? "true" : "false");
+        properties.put("mail.smtp.auth", isAuthEnabled(username) ? "true" : "false");
+        Authenticator authenticator = buildAuthenticator(username, password);
+        session = Session.getDefaultInstance(properties, authenticator);
+    }
+
+    private boolean isAuthEnabled(String username) {
+        return username != null;
+    }
+
+    private Authenticator buildAuthenticator(String username, String password) {
+        if (isAuthEnabled(username)) {
+            return new javax.mail.Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, password);
+                }
+            };
+        }
+        return null;
     }
 
     @Override

@@ -40,9 +40,12 @@ public class NotifierFactory {
                 if("smtp".equalsIgnoreCase(applicationConfig.getMailType())) {
                     return new EmailNotifier(messageComposer, applicationConfig.getFromEmail(), dispatcher.getEndpoint(),
                             applicationConfig.getSmtpHost(), applicationConfig.getSmtpPort(),
-                            applicationConfig.getSmtpUsername(), applicationConfig.getSmtpPassword());
-                } else {
+                            applicationConfig.getSmtpUsername(), applicationConfig.getSmtpPassword(),
+                            applicationConfig.isStartTlsEnabled());
+                } else if ("aws-ses".equalsIgnoreCase(applicationConfig.getMailType())) {
                     return new AwsSesNotifier(messageComposer, applicationConfig.getFromEmail(), dispatcher);
+                } else {
+                    throw new RuntimeException("Email type:" + applicationConfig.getMailType() + "is not supported");
                 }
             case SLACK:
                 return new SlackNotifier(restTemplate, messageComposer, applicationConfig.getSlackUrl(),

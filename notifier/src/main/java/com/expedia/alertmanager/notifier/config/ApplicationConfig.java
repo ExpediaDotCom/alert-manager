@@ -113,6 +113,10 @@ public class ApplicationConfig {
     @Getter
     private String smtpPassword;
 
+    @Value("${smtp.starttls.enable}")
+    @Getter
+    private boolean startTlsEnabled;
+
     @Bean("freemarkerConfig")
     public FreeMarkerConfigurationFactoryBean getFreeMarkerConfiguration() {
         FreeMarkerConfigurationFactoryBean bean = new FreeMarkerConfigurationFactoryBean();

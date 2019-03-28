@@ -35,5 +35,6 @@ smtp:
   port: 25
   username: $${SMTP_USERNAME}
   password: $${SMTP_PASSWORD}
+  starttls.enable: true
 
 

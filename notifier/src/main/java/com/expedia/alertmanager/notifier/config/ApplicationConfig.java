@@ -143,4 +143,10 @@ public class ApplicationConfig {
     @Value("${alert.expiry-time-in-sec:}")
     @Getter
     private Long expiryTimeInSec;
+
+    //TODO - added for debugging AA. please remove later
+    @Value("${alert.threshold-per-detector:100}")
+    @Getter
+    private long alertThresholdPerDetector;
+
 }

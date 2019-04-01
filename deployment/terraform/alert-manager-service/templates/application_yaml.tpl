@@ -32,3 +32,15 @@ alert.store:
 
 mail:
   additional-validator-expression: "${additional_email_validator_expression}"
+
+management:
+  context-path: "/admin"
+  metrics:
+    export:
+      jmx:
+        domain: spring
+    enable:
+      jvm: false
+      tomcat: false
+      system: false
+      process: false

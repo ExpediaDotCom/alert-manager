@@ -44,4 +44,3 @@ management:
       tomcat: false
       system: false
       process: false
-

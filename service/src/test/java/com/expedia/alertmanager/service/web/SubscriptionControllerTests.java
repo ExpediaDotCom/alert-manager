@@ -18,6 +18,7 @@ package com.expedia.alertmanager.service.web;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.ExpressionTree;
+import com.expedia.alertmanager.model.MatchSubscriptionRequest;
 import com.expedia.alertmanager.model.Operator;
 import com.expedia.alertmanager.model.SearchSubscriptionRequest;
 import com.expedia.alertmanager.model.SubscriptionResponse;
@@ -117,7 +118,7 @@ public class SubscriptionControllerTests {
         SubscriptionResponse response = new SubscriptionResponse();
         response.setUser(user("id"));
         response.setName("name");
-        given(subscriptionStore.searchSubscriptions("test", null))
+        given(subscriptionStore.searchSubscriptions(searchSubscriptionRequest))
             .willReturn(Arrays.asList(response));
         mvc.perform(post("/subscriptions/search")
             .content(GSON.toJson(searchSubscriptionRequest))
@@ -125,27 +126,27 @@ public class SubscriptionControllerTests {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.[0].user.id").value("id"))
             .andExpect(jsonPath("$.[0].name").value("name"));
-        verify(subscriptionStore, times(1)).searchSubscriptions("test", null);
+        verify(subscriptionStore, times(1)).searchSubscriptions(searchSubscriptionRequest);
     }
 
     @Test
-    public void givenSearchSubscriptionRequestByLabels_shouldReturnSubscriptions() throws Exception {
-        SearchSubscriptionRequest searchSubscriptionRequest = new SearchSubscriptionRequest();
+    public void givenMatchSubscriptionRequestByLabels_shouldReturnSubscriptions() throws Exception {
+        MatchSubscriptionRequest matchSubscriptionRequest = new MatchSubscriptionRequest();
         Map<String, String> labels = new HashMap<>();
         labels.put("app", "shopping");
-        searchSubscriptionRequest.setLabels(labels);
+        matchSubscriptionRequest.setLabels(labels);
         SubscriptionResponse response = new SubscriptionResponse();
         response.setUser(user("id"));
         response.setName("name");
-        given(subscriptionStore.searchSubscriptions(null, labels))
+        given(subscriptionStore.matchSubscriptions(labels))
             .willReturn(Arrays.asList(response));
-        mvc.perform(post("/subscriptions/search")
-            .content(GSON.toJson(searchSubscriptionRequest))
+        mvc.perform(post("/subscriptions/match")
+            .content(GSON.toJson(matchSubscriptionRequest))
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.[0].user.id").value("id"))
             .andExpect(jsonPath("$.[0].name").value("name"));
-        verify(subscriptionStore, times(1)).searchSubscriptions(null, labels);
+        verify(subscriptionStore, times(1)).matchSubscriptions(labels);
     }
 
     @Test

@@ -18,7 +18,9 @@ package com.expedia.alertmanager.service.dao;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.Dispatcher;
 import com.expedia.alertmanager.model.ExpressionTree;
+import com.expedia.alertmanager.model.MatchSubscriptionRequest;
 import com.expedia.alertmanager.model.Operator;
+import com.expedia.alertmanager.model.SearchSubscriptionRequest;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.model.UpdateSubscriptionRequest;
 import com.expedia.alertmanager.service.conf.ElasticSearchConfig;
@@ -38,6 +40,7 @@ import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import io.searchbox.indices.mapping.GetMapping;
 import io.searchbox.indices.mapping.PutMapping;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -48,6 +51,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,11 +87,15 @@ public class SubscriptionStoreServiceTests {
     @MockBean
     private AlertStoreService alertStore;
 
+    @Before
+    public void beforTest() {
+        given(elasticSearchConfig.getIndexName()).willReturn("subscription");
+        given(elasticSearchConfig.getDocType()).willReturn("_doc");
+    }
+
     @Test
     public void givenValidCreateSubscriptionRequest_shouldCreateSubscriptions() throws IOException {
 
-        given(elasticSearchConfig.getIndexName()).willReturn("subscription");
-        given(elasticSearchConfig.getDocType()).willReturn("_doc");
         given(client.execute(any(GetMapping.class))).willReturn(mockGetMappingResult());
         JestResult putMappingResult = new JestResult(new Gson());
         putMappingResult.setSucceeded(true);
@@ -113,9 +122,6 @@ public class SubscriptionStoreServiceTests {
 
     @Test
     public void givenValidUpdateSubscriptionRequest_shouldUpdateSubscriptions() throws IOException {
-
-        given(elasticSearchConfig.getIndexName()).willReturn("subscription");
-        given(elasticSearchConfig.getDocType()).willReturn("_doc");
 
         given(client.execute(any(GetMapping.class))).willReturn(mockGetMappingResult());
         JestResult putMappingResult = new JestResult(new Gson());
@@ -208,9 +214,33 @@ public class SubscriptionStoreServiceTests {
     @Test
     public void givenValidSearchSubscriptionRequest_shouldGetResults() throws IOException {
 
-        given(elasticSearchConfig.getIndexName()).willReturn("subscription");
-        given(elasticSearchConfig.getDocType()).willReturn("_doc");
+        ensureSearchReturnsSomeResults();
 
+        //search by user id
+        SearchSubscriptionRequest searchRequest = new SearchSubscriptionRequest();
+        searchRequest.setUserId("user");
+        List<SubscriptionResponse> subResponses = subscriptionStore.searchSubscriptions(searchRequest);
+        assertEquals(1, subResponses.size());
+        assertEquals("user", subResponses.get(0).getUser().getId());
+        assertEquals("id-123", subResponses.get(0).getId());
+        assertEquals(1000, subResponses.get(0).getCreatedTime());
+        assertEquals(10000, subResponses.get(0).getLastModifiedTime());
+    }
+
+    @Test
+    public void givenValidMatchSubscriptionRequest_shouldGetResults() throws IOException {
+
+        ensureSearchReturnsSomeResults();
+
+        //given set of labels
+        MatchSubscriptionRequest matchRequest = new MatchSubscriptionRequest();
+        matchRequest.setLabels(Collections.singletonMap("label", "value"));
+        List<SubscriptionResponse> subResponses = subscriptionStore.matchSubscriptions(matchRequest.getLabels());
+        assertEquals(subResponses.size(), 1);
+        assertEquals(subResponses.get(0).getUser().getId(), "user");
+    }
+
+    private void ensureSearchReturnsSomeResults() throws IOException {
         SearchResult searchResult = new SearchResult(new Gson());
         JsonObject source = getSourceJson();
 
@@ -227,23 +257,11 @@ public class SubscriptionStoreServiceTests {
         sourcesVal.add("_source", sourceArray);
         //TODO - revisit if json meets the search result format
         searchResult.setJsonMap(new Gson().fromJson(
-            sourcesVal, Map.class));
+                sourcesVal, Map.class));
         searchResult.setSucceeded(true);
         searchResult.setPathToResult("_source");
         given(client.execute(any(Search.class))).willReturn(searchResult);
         given(clientFactory.getObject()).willReturn(client);
-
-        ExpressionTree expression = new ExpressionTree();
-        expression.setOperator(Operator.AND);
-        expression.setOperands(Arrays.asList(operand("app", "search-app")));
-
-        //search by user id
-        List<SubscriptionResponse> subResponses = subscriptionStore.searchSubscriptions("user", null);
-        assertEquals(subResponses.size(), 1);
-        assertEquals(subResponses.get(0).getUser().getId(), "user");
-        assertEquals(subResponses.get(0).getId(), "id-123");
-        assertEquals(subResponses.get(0).getCreatedTime(), 1000);
-        assertEquals(subResponses.get(0).getLastModifiedTime(), 10000);
     }
 
     private JsonObject getSourceJson() {

@@ -26,5 +26,6 @@ import java.util.Map;
 @EqualsAndHashCode
 public class SearchSubscriptionRequest {
     private String userId;
+    @Deprecated
     private Map<String, String> labels;
 }

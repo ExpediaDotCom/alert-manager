@@ -15,6 +15,7 @@
  */
 package com.expedia.alertmanager.service.web;
 
+import com.expedia.alertmanager.model.MatchSubscriptionRequest;
 import com.expedia.alertmanager.service.dao.SubscriptionStoreService;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.SearchSubscriptionRequest;
@@ -55,6 +56,14 @@ public class SubscriptionController {
         return subscriptionStore.createSubscriptions(createSubRqs);
     }
 
+    @RequestMapping(value = "/subscriptions/match", method = RequestMethod.POST)
+    public List<SubscriptionResponse> matchingSubscriptions(
+            @RequestBody MatchSubscriptionRequest matchSubscriptionRequest) {
+        Assert.isTrue(!ObjectUtils.isEmpty(matchSubscriptionRequest.getLabels()),
+                "labels cant be empty");
+        return subscriptionStore.matchSubscriptions(matchSubscriptionRequest.getLabels());
+    }
+
     @RequestMapping(value = "/subscriptions/search", method = RequestMethod.POST)
     public List<SubscriptionResponse> searchSubscriptions(
         @RequestBody SearchSubscriptionRequest searchSubscriptionRequest) {
@@ -64,9 +73,12 @@ public class SubscriptionController {
         Assert.isTrue(null == searchSubscriptionRequest.getUserId()
                 || ObjectUtils.isEmpty(searchSubscriptionRequest.getLabels()),
             "search by both user id and labels not supported");
-
-        return subscriptionStore.searchSubscriptions(searchSubscriptionRequest.getUserId(),
-            searchSubscriptionRequest.getLabels());
+        if (searchSubscriptionRequest.getUserId() != null) {
+            return subscriptionStore.searchSubscriptions(searchSubscriptionRequest);
+        }
+        else {
+            return subscriptionStore.matchSubscriptions(searchSubscriptionRequest.getLabels());
+        }
     }
 
     @RequestMapping(value = "/subscriptions/{id}", method = RequestMethod.GET)

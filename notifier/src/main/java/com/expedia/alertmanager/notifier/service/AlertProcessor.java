@@ -21,8 +21,6 @@ import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.notifier.action.Notifier;
 import com.expedia.alertmanager.notifier.action.NotifierFactory;
 import com.expedia.alertmanager.notifier.config.ApplicationConfig;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -30,21 +28,15 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
 public class AlertProcessor {
 
-    public static final int DURATION = 5;
     private final NotifierFactory notifierFactory;
     private final SubscriptionService subscriptionService;
     private final AlertReadService alertsReadService;
     private final ApplicationConfig applicationConfig;
-
-    private Cache<String, Long> cache = CacheBuilder.newBuilder()
-            .expireAfterWrite(DURATION, TimeUnit.MINUTES)
-            .build();
 
     @Autowired
     public AlertProcessor(NotifierFactory notifierFactory,
@@ -59,9 +51,6 @@ public class AlertProcessor {
 
     @KafkaListener(topics = "${kafka.topic}")
     public void receive(Alert alert) {
-
-        //TODO - temporary logic to debug detector performance. needs to be removed later.
-        debugDetectorPerformance(alert);
 
         if (anExpiredAlert(alert.getCreationTime())) {
             log.info("ignoring alert='{}' as it is not a recent one",
@@ -88,18 +77,6 @@ public class AlertProcessor {
                 notifier.notify(alert);
             });
         });
-    }
-
-    private void debugDetectorPerformance(Alert alert) {
-        String detectorId = alert.getLabels().get("detectorUUID");
-        if (detectorId != null) {
-            Long count = cache.getIfPresent(detectorId) != null ? cache.getIfPresent(detectorId) : 0l;
-            cache.put(detectorId, count + 1);
-            if (count > applicationConfig.getAlertThresholdPerDetector()) {
-                log.info("detectorId:{} is generating {} anomalies in {} mins, but threshold is {}", detectorId, count,
-                        DURATION, applicationConfig.getAlertThresholdPerDetector());
-            }
-        }
     }
 
     private boolean anExpiredAlert(long creationTime) {

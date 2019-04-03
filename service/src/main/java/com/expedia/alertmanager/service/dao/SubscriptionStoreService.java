@@ -15,15 +15,15 @@
  */
 package com.expedia.alertmanager.service.dao;
 
-import com.expedia.alertmanager.service.conf.ElasticSearchConfig;
-import com.expedia.alertmanager.service.model.SubscriptionEntity;
-
-import com.expedia.alertmanager.service.util.QueryUtil;
 import com.expedia.alertmanager.model.BaseSubscription;
 import com.expedia.alertmanager.model.CreateSubscriptionRequest;
 import com.expedia.alertmanager.model.ExpressionTree;
+import com.expedia.alertmanager.model.SearchSubscriptionRequest;
 import com.expedia.alertmanager.model.SubscriptionResponse;
 import com.expedia.alertmanager.model.UpdateSubscriptionRequest;
+import com.expedia.alertmanager.service.conf.ElasticSearchConfig;
+import com.expedia.alertmanager.service.model.SubscriptionEntity;
+import com.expedia.alertmanager.service.util.QueryUtil;
 import com.google.gson.Gson;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
@@ -232,35 +232,44 @@ public class SubscriptionStoreService {
                     .build();
     }
 
-    public List<SubscriptionResponse> searchSubscriptions(String userId, Map<String, String> labels) {
+    public List<SubscriptionResponse> matchSubscriptions(Map<String, String> labels) {
         JestClient client = clientFactory.getObject();
         try {
-            if (userId != null) {
-                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-                searchSourceBuilder.query(
-                    QueryBuilders.nestedQuery(SubscriptionEntity.USER_KEYWORD,
-                    QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(
-                        SubscriptionEntity.USER_KEYWORD + "." + SubscriptionEntity.USER_ID_KEYWORD, userId)), ScoreMode.None));
-                //FIXME setting default result set size to 200 until we have pagination.
-                searchSourceBuilder.size(200);
-                return getSubscriptionResponses(client, searchSourceBuilder);
-            } else {
-                XContentBuilder xContent = XContentFactory.jsonBuilder();
-                xContent.map(labels);
-                PercolateQueryBuilder percolateQuery =
+            XContentBuilder xContent = XContentFactory.jsonBuilder();
+            xContent.map(labels);
+            PercolateQueryBuilder percolateQuery =
                     new PercolateQueryBuilder(SubscriptionEntity.QUERY_KEYWORD, elasticSearchConfig.getDocType(), xContent.bytes(),
-                        XContentType.JSON);
-                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-                searchSourceBuilder.query(percolateQuery);
-                long startTime = System.currentTimeMillis();
-                List<SubscriptionResponse> responses = getSubscriptionResponses(client, searchSourceBuilder);
-                long stopTime = System.currentTimeMillis();
-                log.info("Search elapsed time:{}", stopTime - startTime);
-                return responses;
-            }
+                            XContentType.JSON);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(percolateQuery);
+            long startTime = System.currentTimeMillis();
+            List<SubscriptionResponse> responses = getSubscriptionResponses(client, searchSourceBuilder);
+            long stopTime = System.currentTimeMillis();
+            log.info("Search elapsed time:{}", stopTime - startTime);
+            return responses;
+        } catch (IOException e) {
+            log.error("Match subscriptions failed", e);
+            throw new RuntimeException("Match subscriptions failed", e);
+        } finally {
+            closeConnection(client);
+        }
+    }
+
+    public List<SubscriptionResponse> searchSubscriptions(SearchSubscriptionRequest searchRequest) {
+        JestClient client = clientFactory.getObject();
+        try {
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(
+                QueryBuilders.nestedQuery(SubscriptionEntity.USER_KEYWORD,
+                QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(
+                    SubscriptionEntity.USER_KEYWORD + "." + SubscriptionEntity.USER_ID_KEYWORD,
+                        searchRequest.getUserId())), ScoreMode.None));
+            //FIXME setting default result set size to 200 until we have pagination.
+            searchSourceBuilder.size(200);
+            return getSubscriptionResponses(client, searchSourceBuilder);
         } catch (IOException e) {
             log.error("Search subscriptions failed", e);
-            throw new RuntimeException(e);
+            throw new RuntimeException("Search subscriptions failed", e);
         } finally {
             closeConnection(client);
         }

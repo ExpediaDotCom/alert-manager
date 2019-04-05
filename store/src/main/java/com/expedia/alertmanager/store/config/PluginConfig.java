@@ -18,15 +18,14 @@ package com.expedia.alertmanager.store.config;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.util.Map;
 
 @Data
-@ToString
-@EqualsAndHashCode
-@NoArgsConstructor
 @Accessors @Getter
 public class PluginConfig {
     @JsonProperty("name")
@@ -35,6 +34,9 @@ public class PluginConfig {
     @JsonProperty("jar.name")
     private String jarName = "";
 
+    @JsonProperty("host")
+    private String host = "";
+
     //@JsonProperty("conf")
-    private Map<String, Object> conf;
+    private Map<String, Object> config;
 }

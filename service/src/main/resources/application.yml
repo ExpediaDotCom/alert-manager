@@ -3,17 +3,15 @@ alert.store:
   plugins:
   - name: elasticsearch
     jarName: "elasticsearch-store.jar"
-    conf:
-     host: "http://elasticsearch:9200"
-     template: ""
-     aws-iam-auth-required: false
-     aws-region: ""
+    host: "http://elasticsearch:9200"
+    config: {"aws-iam-auth-required":false}
 
 es:
   index.name: subscription
   create.index.if.not.found: true
   doctype: details
-  urls: "http://elasticsearch:9200"
+  host: "http://elasticsearch:9200"
+  config: {"aws-iam-auth-required":false}
   connection.timeout: 5000
   max.connection.idletime: 1000
   max.total.connection: 1000

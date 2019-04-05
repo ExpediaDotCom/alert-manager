@@ -8,9 +8,8 @@ variable "mail_from" {}
 variable "alert_rate_limit_enabled" {}
 variable "alert_rate_limit_value" {}
 variable "alert_expiry_time_in_sec" {}
-variable "es_urls" {}
-variable "es_aws_iam_auth_required" {}
-variable "es_aws_region" {}
+variable "alert_store_es_urls" {}
+variable "alert_store_es_config_vars_json" {}
 variable "graphite_hostname" {}
 variable "graphite_port" {}
 variable "graphite_enabled" {}

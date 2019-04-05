@@ -41,9 +41,10 @@ data "template_file" "config_data" {
 
   vars {
     kafka_endpoint = "${var.kafka_endpoint}"
-    es_urls = "${var.es_urls}"
-    es_aws_iam_auth_required = "${var.es_aws_iam_auth_required}"
-    es_aws_region = "${var.es_aws_region}"
+    subscription_es_urls = "${var.subscription_es_urls}"
+    subscription_es_config_vars_json = "${var.subscription_es_config_vars_json}"
+    alert_store_es_urls = "${var.alert_store_es_urls}"
+    alert_store_es_config_vars_json = "${var.alert_store_es_config_vars_json}"
     additional_email_validator_expression = "${var.additional_email_validator_expression}"
   }
 }

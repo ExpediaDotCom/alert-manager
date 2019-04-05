@@ -26,9 +26,8 @@ alert:
   expiry-time-in-sec: ${alert_expiry_time_in_sec}
 
 alert-store-es:
-  url: ${es_urls}
-  aws-iam-auth-required: ${es_aws_iam_auth_required}
-  aws-region: ${es_aws_region}
+  host: "${alert_store_es_urls}"
+  config: ${alert_store_es_config_vars_json}
 
 smtp:
   host: localhost

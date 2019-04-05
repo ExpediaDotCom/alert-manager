@@ -46,9 +46,8 @@ data "template_file" "config_data" {
     alert_rate_limit_enabled = "${var.alert_rate_limit_enabled}"
     alert_rate_limit_value = "${var.alert_rate_limit_value}"
     alert_expiry_time_in_sec = "${var.alert_expiry_time_in_sec}"
-    es_urls = "${var.es_urls}"
-    es_aws_iam_auth_required = "${var.es_aws_iam_auth_required}"
-    es_aws_region = "${var.es_aws_region}"
+    alert_store_es_urls = "${var.alert_store_es_urls}"
+    alert_store_es_config_vars_json = "${var.alert_store_es_config_vars_json}"
   }
 }
 

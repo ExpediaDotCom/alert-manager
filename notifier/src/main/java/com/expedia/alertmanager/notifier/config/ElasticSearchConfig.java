@@ -45,7 +45,7 @@ public class ElasticSearchConfig {
     @Value("${alert-store-es.doctype:alerts}")
     @Getter
     private String docType;
-    @Value("${alert-store-es.url}")
+    @Value("${alert-store-es.host}")
     private String urls;
     @Value("${alert-store-es.connection.timeout:3000}")
     private int connectionTimeout;
@@ -57,13 +57,13 @@ public class ElasticSearchConfig {
     private int readTimeout;
     @Value("${alert-store-es.request.compression:false}")
     private boolean requestCompression;
-    @Value("${alert-store-es.username:@null}")
+    @Value("${alert-store-es.config.username:@null}")
     private String username;
-    @Value("${alert-store-es.password:@null}")
+    @Value("${alert-store-es.config.password:@null}")
     private String password;
-    @Value("${alert-store-es.aws-iam-auth-required:false}")
+    @Value("${alert-store-es.config.aws-iam-auth-required:false}")
     private boolean needsAWSIAMAuth;
-    @Value("${alert-store-es.aws-region:@null}")
+    @Value("${alert-store-es.config.aws-region:@null}")
     private String awsRegion;
 
     @Bean

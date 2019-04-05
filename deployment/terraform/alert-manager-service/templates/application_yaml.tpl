@@ -2,13 +2,12 @@ es:
   index.name: subscription
   create.index.if.not.found: true
   doctype: details
-  urls: "${es_urls}"
+  host: "${subscription_es_urls}"
+  config: ${subscription_es_config_vars_json}
   connection.timeout: 5000
   max.connection.idletime: 1000
   max.total.connection: 1000
   read.timeout: 1000
-  aws-iam-auth-required: ${es_aws_iam_auth_required}
-  aws-region: ${es_aws_region}
 
 kafka:
   producer:
@@ -24,11 +23,8 @@ alert.store:
   plugins:
   - name: elasticsearch
     jarName: "elasticsearch-store.jar"
-    conf:
-     host: "${es_urls}"
-     template: ""
-     aws-iam-auth-required: ${es_aws_iam_auth_required}
-     aws-region: ${es_aws_region}
+    host: "${alert_store_es_urls}"
+    config: ${alert_store_es_config_vars_json}
 
 mail:
   additional-validator-expression: "${additional_email_validator_expression}"

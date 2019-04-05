@@ -45,7 +45,7 @@ public class ElasticSearchConfig {
     private boolean createIndexIfNotFound;
     @Value("${es.doctype}")
     private String docType;
-    @Value("${es.urls}")
+    @Value("${es.host}")
     private String urls;
     @Value("${es.connection.timeout}")
     private int connectionTimeout;
@@ -57,13 +57,13 @@ public class ElasticSearchConfig {
     private int readTimeout;
     @Value("${es.request.compression:false}")
     private boolean requestCompression;
-    @Value("${es.username:@null}")
+    @Value("${es.config.username:@null}")
     private String username;
-    @Value("${es.password:@null}")
+    @Value("${es.config.password:@null}")
     private String password;
-    @Value("${es.aws-iam-auth-required:false}")
+    @Value("${es.config.aws-iam-auth-required:false}")
     private boolean needsAWSIAMAuth;
-    @Value("${es.aws-region:@null}")
+    @Value("${es.config.aws-region:@null}")
     private String awsRegion;
 
     @Bean

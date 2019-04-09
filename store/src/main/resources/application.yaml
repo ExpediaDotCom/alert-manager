@@ -2,10 +2,8 @@ plugin.directory: "storage-backends/elasticsearch/target"
 plugin:
    name: "elasticsearch"
    jar.name: "elasticsearch-store-1.0.0-SNAPSHOT.jar"
-   conf:
-    host: "http://localhost:9200"
-    aws-iam-auth-required: false
-    aws-region: ""
+   host: "http://elasticsearch:9200"
+   config: {"aws-iam-auth-required":false}
 
 kafka:
   topic: alerts

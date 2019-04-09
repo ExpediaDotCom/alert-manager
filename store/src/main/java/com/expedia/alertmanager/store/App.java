@@ -18,6 +18,7 @@ package com.expedia.alertmanager.store;
 
 import com.expedia.alertmanager.model.store.AlertStore;
 import com.expedia.alertmanager.store.config.ConfigurationLoader;
+import com.expedia.alertmanager.store.config.PluginConfig;
 import com.expedia.alertmanager.store.config.StoreConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 public class App {
@@ -76,7 +79,13 @@ public class App {
 
         // load and initialize the plugin
         final AlertStore store = loader.iterator().next();
-        store.init(cfg.getPlugin().getConf());
+        PluginConfig pluginConfig = cfg.getPlugin();
+        final Map<String, Object> config = new HashMap<>();
+        config.put("host", pluginConfig.getHost());
+        if (pluginConfig.getConfig() != null) {
+            config.putAll(pluginConfig.getConfig());
+        }
+        store.init(config);
 
         LOGGER.info("Store plugin with name={} has been successfully loaded", pluginName);
         return store;

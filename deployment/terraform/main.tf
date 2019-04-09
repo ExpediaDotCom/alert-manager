@@ -10,7 +10,7 @@ module "alert-manager-service" {
   source = "alert-manager-service"
 
   # Docker
-  image = "expediadotcom/alert-manager-service:${var.alert-manager-service["version"]}"
+  image = "${var.alert-manager-service["image"]}"
   image_pull_policy = "${var.alert-manager-service["image_pull_policy"]}"
 
   # Kubernetes
@@ -35,17 +35,18 @@ module "alert-manager-service" {
 
   # App
   kafka_endpoint = "${local.kafka_endpoint}"
-  es_urls = "${var.alert-manager-service["es_urls"]}"
-  es_aws_iam_auth_required = "${var.alert-manager-service["es_aws_iam_auth_required"]}"
-  es_aws_region = "${var.alert-manager-service["es_aws_region"]}"
   additional_email_validator_expression = "${var.alert-manager-service["additional_email_validator_expression"]}"
+  subscription_es_urls = "${var.alert-manager-service["subscription_es_urls"]}"
+  subscription_es_config_vars_json = "${var.alert-manager-service["subscription_es_config_vars_json"]}"
+  alert_store_es_urls = "${var.alert-manager-service["alert_store_es_urls"]}"
+  alert_store_es_config_vars_json = "${var.alert-manager-service["alert_store_es_config_vars_json"]}"
 }
 
 module "alert-manager-store" {
   source = "alert-manager-store"
 
   # Docker
-  image = "expediadotcom/alert-manager-store:${var.alert-manager-store["version"]}"
+  image = "${var.alert-manager-store["image"]}"
   image_pull_policy = "${var.alert-manager-store["image_pull_policy"]}"
 
   # Kubernetes
@@ -70,16 +71,15 @@ module "alert-manager-store" {
 
   # App
   kafka_endpoint = "${local.kafka_endpoint}"
-  es_urls = "${var.alert-manager-store["es_urls"]}"
-  es_aws_iam_auth_required = "${var.alert-manager-store["es_aws_iam_auth_required"]}"
-  es_aws_region = "${var.alert-manager-store["es_aws_region"]}"
+  alert_store_es_urls = "${var.alert-manager-store["alert_store_es_urls"]}"
+  alert_store_es_config_vars_json = "${var.alert-manager-store["alert_store_es_config_vars_json"]}"
 }
 
 module "alert-manager-notifier" {
   source = "alert-manager-notifier"
 
   # Docker
-  image = "expediadotcom/alert-manager-notifier:${var.alert-manager-notifier["version"]}"
+  image = "${var.alert-manager-notifier["image"]}"
   image_pull_policy = "${var.alert-manager-notifier["image_pull_policy"]}"
 
   # Kubernetes
@@ -109,7 +109,6 @@ module "alert-manager-notifier" {
   alert_rate_limit_enabled = "${var.alert-manager-notifier["alert_rate_limit_enabled"]}"
   alert_rate_limit_value = "${var.alert-manager-notifier["alert_rate_limit_value"]}"
   alert_expiry_time_in_sec = "${var.alert-manager-notifier["alert_expiry_time_in_sec"]}"
-  es_urls = "${var.alert-manager-notifier["es_urls"]}"
-  es_aws_iam_auth_required = "${var.alert-manager-notifier["es_aws_iam_auth_required"]}"
-  es_aws_region = "${var.alert-manager-notifier["es_aws_region"]}"
+  alert_store_es_urls = "${var.alert-manager-notifier["alert_store_es_urls"]}"
+  alert_store_es_config_vars_json = "${var.alert-manager-notifier["alert_store_es_config_vars_json"]}"
 }

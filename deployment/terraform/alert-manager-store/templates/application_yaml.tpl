@@ -2,10 +2,9 @@ plugin.directory: "/app/bin/storage-backends"
 plugin:
   name: "elasticsearch"
   jar.name: "elasticsearch-store.jar"
-  conf:
-   host: "${es_urls}"
-   aws-iam-auth-required: ${es_aws_iam_auth_required}
-   aws-region: ${es_aws_region}
+  host: "${alert_store_es_urls}"
+  config: ${alert_store_es_config_vars_json}
+
 kafka:
   topic: alerts
   stream.threads: 4

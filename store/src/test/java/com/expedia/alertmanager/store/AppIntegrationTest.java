@@ -55,8 +55,7 @@ public class AppIntegrationTest {
                 "plugin:\n" +
                 "   name: \"elasticsearch\"\n" +
                 "   jar.name: \"elasticsearch-store.jar\"\n" +
-                "   conf:\n" +
-                "    host: http://elasticsearch:9200\n" +
+                "   host: http://elasticsearch:9200\n" +
                 "kafka:\n" +
                 "  topic: alerts\n" +
                 "  stream.threads: 2\n" +

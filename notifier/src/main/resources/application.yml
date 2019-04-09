@@ -20,7 +20,8 @@ slack:
   token: ${SLACK_TOKEN:}
 
 alert-store-es:
-  url: http://elasticsearch:9200
+  host: http://elasticsearch:9200
+  config: {"aws-iam-auth-required":false, "aws_region":"us-west-2"}
 
 smtp:
   host: ${SMTP_HOST:localhost}

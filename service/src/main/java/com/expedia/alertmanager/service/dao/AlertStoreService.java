@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -74,7 +75,12 @@ public class AlertStoreService {
 
             // load and initialize the plugin
             final AlertStore store = loader.iterator().next();
-            store.init(cfg.getConf());
+            final Map<String, Object> config = new HashMap<>();
+            config.put("host", cfg.getHost());
+            if (cfg.getConfig() != null) {
+                config.putAll(cfg.getConfig());
+            }
+            store.init(config);
             stores.add(store);
         }
         return stores;

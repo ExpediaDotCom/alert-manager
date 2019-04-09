@@ -3,9 +3,8 @@ variable "image_pull_policy" {}
 variable "replicas" {}
 variable "namespace" {}
 variable "kafka_endpoint" {}
-variable "es_urls" {}
-variable "es_aws_iam_auth_required" {}
-variable "es_aws_region" {}
+variable "alert_store_es_urls" {}
+variable "alert_store_es_config_vars_json" {}
 variable "graphite_hostname" {}
 variable "graphite_port" {}
 variable "graphite_enabled" {}

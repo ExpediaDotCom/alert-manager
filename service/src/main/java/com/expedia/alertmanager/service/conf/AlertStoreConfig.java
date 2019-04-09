@@ -31,33 +31,11 @@ public class AlertStoreConfig {
 
     private List<PluginConfig> plugins;
 
+    @Data
     public static class PluginConfig {
         private String name;
         private String jarName;
-        private Map<String, Object> conf;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getJarName() {
-            return jarName;
-        }
-
-        public void setJarName(String jarName) {
-            this.jarName = jarName;
-        }
-
-        public Map<String, Object> getConf() {
-            return conf;
-        }
-
-        public void setConf(Map<String, Object> conf) {
-            this.conf = conf;
-        }
+        private String host;
+        private Map<String, Object> config;
     }
 }

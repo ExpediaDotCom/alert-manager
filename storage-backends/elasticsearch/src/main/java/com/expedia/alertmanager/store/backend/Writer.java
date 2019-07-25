@@ -54,7 +54,7 @@ class Writer {
             }
             this.client.bulkAsync(bulkRequest, new BulkActionListener(bulkRequest, callback, 0));
         } catch (IOException ex) {
-            callback.onComplete(ex);
+            callback.onComplete(Optional.of(ex));
         }
     }
 
@@ -76,7 +76,7 @@ class Writer {
                 retry(new RuntimeException("Fail to execute the elastic search write with partial failures:"
                         + bulkItemResponses.buildFailureMessage()));
             } else {
-                callback.onComplete(new Exception("None"));
+                callback.onComplete(Optional.empty());
 
             }
         }
@@ -92,11 +92,11 @@ class Writer {
                     Thread.sleep(retryBackOffMillis);
                     client.bulkAsync(bulkRequest, new BulkActionListener(bulkRequest, callback, retryCount + 1));
                 } catch (InterruptedException e1) {
-                    callback.onComplete(e);
+                    callback.onComplete(Optional.of(e));
                 }
             } else {
                 logger.error("All retries while writing to elastic search have been exhausted");
-                callback.onComplete(e);
+                callback.onComplete(Optional.of(e));
             }
         }
         // visible for testing

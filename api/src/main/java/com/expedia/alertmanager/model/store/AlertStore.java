@@ -26,7 +26,7 @@ public interface AlertStore {
     }
 
     public interface WriteCallback {
-        void onComplete(Exception ex);
+        void onComplete(Optional<Exception> ex);
     }
 
     void read(final Map<String, String> labels, long from, long to, int size, ReadCallback callback);

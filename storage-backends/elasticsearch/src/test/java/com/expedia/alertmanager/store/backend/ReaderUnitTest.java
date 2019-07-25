@@ -71,7 +71,7 @@ public class ReaderUnitTest {
         final Boolean[] expectWriteCallback = new Boolean[] { false };
         final Map<String, String> labels = Collections.singletonMap("service", "svc1");
         this.reader.read(labels, timestamp - 10000, timestamp, 100, (alerts, ex) -> {
-            if(ex == null) {
+            if(ex.getMessage() == "None") {
                 Assert.fail("no exception is expected in searching alerts");
             }
             expectWriteCallback[0] = true;
@@ -91,7 +91,7 @@ public class ReaderUnitTest {
 
         final Map<String, String> labels = Collections.singletonMap("service", "svc1");
         this.reader.read(labels, timestamp - 10000, timestamp, 100, (alerts, ex) -> {
-            if(ex != null) {
+            if(ex.getMessage() != "None") {
                 Assert.fail("no exception is expected in searching alerts");
             }
             Assert.assertEquals(alerts.size(), 1);

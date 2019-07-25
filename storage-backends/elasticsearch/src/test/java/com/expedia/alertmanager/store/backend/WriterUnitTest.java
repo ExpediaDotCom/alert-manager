@@ -83,7 +83,7 @@ public class WriterUnitTest {
         final Boolean[] expectWriteCallback = new Boolean[] { false };
         writer.write(Collections.singletonList(createAlertWithId()), ex -> {
             expectWriteCallback[0] = true;
-            if (ex != null) {
+            if (ex.getMessage() != "None") {
                 Assert.fail(ex.getMessage());
             }
         });
@@ -124,7 +124,7 @@ public class WriterUnitTest {
         final Boolean[] expectWriteCallback = new Boolean[] { false };
         writer.write(Collections.singletonList(createAlertWithId()), ex -> {
             expectWriteCallback[0] = true;
-            if (ex != null) {
+            if (ex.getMessage() != "None") {
                 Assert.fail(ex.getMessage());
             }
         });

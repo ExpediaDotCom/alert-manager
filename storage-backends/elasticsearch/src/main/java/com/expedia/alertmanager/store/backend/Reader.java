@@ -75,13 +75,13 @@ class Reader {
                     }
                     alerts.add(aId);
                 }
-                callback.onComplete(alerts, null);
+                callback.onComplete(alerts, new Exception("None"));
             }
 
             @Override
             public void onFailure(final Exception ex) {
                 logger.error("Fail to read the alert response from elastic search", ex);
-                callback.onComplete(null, ex);
+                callback.onComplete(new ArrayList<>(), ex);
             }
         });
     }

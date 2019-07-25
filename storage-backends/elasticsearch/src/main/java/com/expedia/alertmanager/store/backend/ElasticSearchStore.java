@@ -116,10 +116,11 @@ public class ElasticSearchStore implements AlertStore {
         Object template = config.get("template");
         if (template == null) {
             // read from resource
-            val reader = new BufferedReader(
-                    new InputStreamReader(
-                            this.getClass().getResourceAsStream("/index_template.json")));
+            InputStreamReader inputStreamReader = new InputStreamReader(
+                    this.getClass().getResourceAsStream("/index_template.json"));
+            val reader = new BufferedReader(inputStreamReader);
             template = reader.lines().collect(Collectors.joining("\n"));
+            inputStreamReader.close();
             reader.close();
         }
 

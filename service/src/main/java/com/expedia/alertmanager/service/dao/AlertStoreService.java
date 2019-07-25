@@ -60,7 +60,7 @@ public class AlertStoreService {
             final String pluginJarFileName = cfg.getJarName().toLowerCase();
 
             File pluginDir = new File(storeConfig.getPluginDirectory());
-            File[] plugins = pluginDir.listFiles(file -> file.getName().toLowerCase().equals(pluginJarFileName));
+            File[] plugins = pluginDir.listFiles(file -> file.getName().equalsIgnoreCase(pluginJarFileName));
 
             if (plugins == null || plugins.length != 1) {
                 throw new RuntimeException(
@@ -102,7 +102,7 @@ public class AlertStoreService {
         for (final AlertStore store : stores) {
             store.read(labels, from, to, size, (receivedAlerts, ex) -> {
                 synchronized (alerts) {
-                    if (ex == null) {
+                    if (ex.getMessage() == "None") {
                         receivedAlerts.forEach(a -> alerts.add(a.getAlert()));
                         if (waitForStores.decrementAndGet() == 0) {
                             response.complete(alerts);

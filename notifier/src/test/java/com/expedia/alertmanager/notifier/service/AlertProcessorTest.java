@@ -75,7 +75,7 @@ public class AlertProcessorTest {
         given(subscriptionService.getSubscriptions(anyMap())).willReturn(Arrays.asList(subscriptionResponse));
         given(notifierFactory.getNotifier(emailDispatcher)).willReturn(notifier);
         given(notifierFactory.getNotifier(slackDispatcher)).willReturn(notifier);
-        given(applicationConfig.getExpiryTimeInSec()).willReturn(null);
+        given(applicationConfig.getExpiryTimeInSec()).willReturn((System.currentTimeMillis()+1) / 1000);
         Alert alert = new Alert();
         alert.setLabels(Collections.emptyMap());
         alertProcessor.receive(alert);
@@ -87,7 +87,7 @@ public class AlertProcessorTest {
         when(applicationConfig.isRateLimitEnabled()).thenReturn(true);
         when(applicationConfig.getRateLimit()).thenReturn(10L);
         when(alertsReadService.getAlertsCountForToday()).thenReturn(10L);
-        given(applicationConfig.getExpiryTimeInSec()).willReturn(null);
+        given(applicationConfig.getExpiryTimeInSec()).willReturn(300l);
         Dispatcher emailDispatcher = new Dispatcher();
         emailDispatcher.setType(Dispatcher.Type.EMAIL);
         emailDispatcher.setEndpoint("email@email.com");

@@ -76,7 +76,8 @@ class Writer {
                 retry(new RuntimeException("Fail to execute the elastic search write with partial failures:"
                         + bulkItemResponses.buildFailureMessage()));
             } else {
-                callback.onComplete(null);
+                callback.onComplete(new Exception("None"));
+
             }
         }
 

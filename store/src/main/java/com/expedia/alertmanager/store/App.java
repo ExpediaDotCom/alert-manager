@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Arrays;
 
 public class App {
     private final static Logger LOGGER = LoggerFactory.getLogger(App.class);
@@ -53,10 +54,8 @@ public class App {
 
     private static StoreConfig loadConfig(String[] args) throws IOException {
         File configFile = null;
-        Set<String> allowedconfigFiles = new HashSet<String>();
-        allowedconfigFiles.add("application.yml");
-        allowedconfigFiles.add("application-dev.yml");
-        allowedconfigFiles.add("/tmp/application.yaml");
+        Set<String> allowedconfigFiles = new HashSet(Arrays.asList("application.yml",
+                "application-dev.yml", "/tmp/application.yaml"));
         if (args != null && args.length == 1 && !args[0].isEmpty()
                 && allowedconfigFiles.contains(args[0])) {
             configFile = new File(args[0]);

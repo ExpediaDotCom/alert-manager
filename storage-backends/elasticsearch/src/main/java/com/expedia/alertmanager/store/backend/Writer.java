@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.expedia.alertmanager.store.backend.ElasticSearchStore.*;
 
@@ -92,7 +93,7 @@ class Writer {
                     Thread.sleep(retryBackOffMillis);
                     client.bulkAsync(bulkRequest, new BulkActionListener(bulkRequest, callback, retryCount + 1));
                 } catch (InterruptedException e1) {
-                    callback.onComplete(Optional.of(e));
+                    callback.onComplete(Optional.of(e1));
                 }
             } else {
                 logger.error("All retries while writing to elastic search have been exhausted");

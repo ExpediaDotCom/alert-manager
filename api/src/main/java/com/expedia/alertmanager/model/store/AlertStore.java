@@ -19,10 +19,11 @@ package com.expedia.alertmanager.model.store;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface AlertStore {
     public interface ReadCallback {
-        void onComplete(final List<AlertWithId> alerts, Exception ex);
+        void onComplete(final List<AlertWithId> alerts, Optional<Exception> ex);
     }
 
     public interface WriteCallback {

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class AlertStoreService {
             final String pluginJarFileName = cfg.getJarName().toLowerCase();
 
             File pluginDir = new File(storeConfig.getPluginDirectory());
-            File[] plugins = pluginDir.listFiles(file -> file.getName().toLowerCase().equals(pluginJarFileName));
+            File[] plugins = pluginDir.listFiles(file -> file.getName().equalsIgnoreCase(pluginJarFileName));
 
             if (plugins == null || plugins.length != 1) {
                 throw new RuntimeException(
@@ -102,7 +103,7 @@ public class AlertStoreService {
         for (final AlertStore store : stores) {
             store.read(labels, from, to, size, (receivedAlerts, ex) -> {
                 synchronized (alerts) {
-                    if (ex == null) {
+                    if (!ex.isPresent()) {
                         receivedAlerts.forEach(a -> alerts.add(a.getAlert()));
                         if (waitForStores.decrementAndGet() == 0) {
                             response.complete(alerts);
@@ -110,7 +111,7 @@ public class AlertStoreService {
                     } else {
                         if (waitForStores.getAndSet(0) != 0) {
                             LOGGER.error("Fail to fetch alerts from the store with error", ex);
-                            response.completeExceptionally(ex);
+                            response.completeExceptionally(ex.get());
                         }
                     }
                 }

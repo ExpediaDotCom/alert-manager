@@ -31,6 +31,9 @@ import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 public class App {
     private final static Logger LOGGER = LoggerFactory.getLogger(App.class);
@@ -51,7 +54,10 @@ public class App {
 
     private static StoreConfig loadConfig(String[] args) throws IOException {
         File configFile = null;
-        if (args != null && args.length == 1 && !args[0].isEmpty()) {
+        Set<String> allowedconfigFiles = new HashSet(Arrays.asList("application.yml",
+                "application-dev.yml", "/tmp/application.yaml"));
+        if (args != null && args.length == 1 && !args[0].isEmpty()
+                && allowedconfigFiles.contains(args[0])) {
             configFile = new File(args[0]);
         }
         return ConfigurationLoader.loadConfig(configFile);
@@ -64,7 +70,7 @@ public class App {
         LOGGER.info("Loading the store plugin with name={}", pluginName);
 
         File pluginDir = new File(cfg.getPluginDirectory());
-        File[] plugins = pluginDir.listFiles(file -> file.getName().toLowerCase().equals(pluginJarFileName));
+        File[] plugins = pluginDir.listFiles(file -> file.getName().equalsIgnoreCase(pluginJarFileName));
 
         if (plugins == null || plugins.length != 1) {
             throw new RuntimeException(

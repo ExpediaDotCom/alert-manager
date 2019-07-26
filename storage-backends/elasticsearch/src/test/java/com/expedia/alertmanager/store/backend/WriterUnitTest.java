@@ -83,8 +83,8 @@ public class WriterUnitTest {
         final Boolean[] expectWriteCallback = new Boolean[] { false };
         writer.write(Collections.singletonList(createAlertWithId()), ex -> {
             expectWriteCallback[0] = true;
-            if (ex != null) {
-                Assert.fail(ex.getMessage());
+            if (ex.isPresent()) {
+                Assert.fail(ex.toString());
             }
         });
 
@@ -103,10 +103,10 @@ public class WriterUnitTest {
         final Boolean[] expectWriteCallback = new Boolean[] { false };
         writer.write(Collections.singletonList(createAlertWithId()), ex -> {
             expectWriteCallback[0] = true;
-            if (ex == null) {
+            if (!ex.isPresent()) {
                 Assert.fail("runtime indexing exception is expected");
             } else {
-                Assert.assertEquals("expected exception", ex.getMessage(), "fail to index");
+                Assert.assertEquals("expected exception", ex.get().toString(), new RuntimeException("fail to index").toString());
             }
         });
 
@@ -124,8 +124,8 @@ public class WriterUnitTest {
         final Boolean[] expectWriteCallback = new Boolean[] { false };
         writer.write(Collections.singletonList(createAlertWithId()), ex -> {
             expectWriteCallback[0] = true;
-            if (ex != null) {
-                Assert.fail(ex.getMessage());
+            if (ex.isPresent()) {
+                Assert.fail(ex.toString());
             }
         });
 

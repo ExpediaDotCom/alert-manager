@@ -49,7 +49,7 @@ public class EmailNotifier implements Notifier {
         properties.put("mail.smtp.port", port);
         properties.put("mail.smtp.username", username);
         properties.put("mail.smtp.password", password);
-        properties.put("mail.smtp.starttls.enable", startTlsEnabled ? "true" : "false");
+        properties.put("mail.smtp.starttls.enable", "true");
         properties.put("mail.smtp.auth", isAuthEnabled(username) ? "true" : "false");
         Authenticator authenticator = buildAuthenticator(username, password);
         session = Session.getDefaultInstance(properties, authenticator);

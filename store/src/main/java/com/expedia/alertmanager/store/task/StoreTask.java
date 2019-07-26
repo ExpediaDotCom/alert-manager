@@ -168,8 +168,8 @@ public class StoreTask implements Runnable, Closeable {
         }
 
         @Override
-        public void onComplete(final Exception ex) {
-            if (ex == null) {
+        public void onComplete(final Optional<Exception> ex) {
+            if (!ex.isPresent()) {
                 // commit offsets
                 synchronized (callbacks) {
                     for (final StoreWriteCallback cbk : callbacks) {

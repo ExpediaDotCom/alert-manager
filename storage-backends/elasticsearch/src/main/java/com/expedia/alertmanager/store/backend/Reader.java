@@ -14,10 +14,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.expedia.alertmanager.store.backend.ElasticSearchStore.*;
@@ -82,7 +79,7 @@ class Reader {
             @Override
             public void onFailure(final Exception ex) {
                 logger.error("Fail to read the alert response from elastic search", ex);
-                callback.onComplete(new ArrayList<>(), Optional.of(ex));
+                callback.onComplete(Collections.emptyList(), Optional.of(ex));
             }
         });
     }

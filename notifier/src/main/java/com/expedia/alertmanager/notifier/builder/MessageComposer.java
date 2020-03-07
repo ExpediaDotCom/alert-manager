@@ -19,7 +19,6 @@ import com.expedia.alertmanager.model.Alert;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
@@ -31,9 +30,11 @@ import java.util.Map;
 @Slf4j
 public class MessageComposer {
 
-    @Autowired
-    @Qualifier("freemarkerConfig")
-    private Configuration freemarkerConfig;
+    private final Configuration freemarkerConfig;
+
+    public MessageComposer(@Qualifier("freemarkerConfig") Configuration freemarkerConfig) {
+        this.freemarkerConfig = freemarkerConfig;
+    }
 
     public String buildContent(Alert alert, String templateName) {
         try {

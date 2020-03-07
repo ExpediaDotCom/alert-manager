@@ -120,7 +120,7 @@ public class ApplicationConfig {
     @Bean("freemarkerConfig")
     public FreeMarkerConfigurationFactoryBean getFreeMarkerConfiguration() {
         FreeMarkerConfigurationFactoryBean bean = new FreeMarkerConfigurationFactoryBean();
-        bean.setTemplateLoaderPath("classpath:/templates/");
+        bean.setTemplateLoaderPath("../templates/");
         return bean;
     }
 

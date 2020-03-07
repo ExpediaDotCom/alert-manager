@@ -27,6 +27,12 @@ public class MessageComposerTest {
     @Test
     public void test_buildContent_For_Email_Template() {
         String out = messageComposer.buildContent(new Alert(), "email-template.ftl");
-        assertTrue(out.contains("You have one alert."));
+        assertTrue("Email template exists", out.contains("You have one alert."));
+    }
+
+    @Test
+    public void test_buildContent_For_Slack_Template() {
+        String out = messageComposer.buildContent(new Alert(), "slack-message-template.ftl");
+        assertTrue("Slack template exists", out.contains("You have one alert."));
     }
 }

@@ -65,7 +65,7 @@
         <am.version>1.0.0-SNAPSHOT</am.version>
         <jest.version>6.3.1</jest.version>
         <percolator-client.version>5.6.0</percolator-client.version>
-        <elasticsearch.version>6.0.1</elasticsearch.version>
+        <elasticsearch.version>7.11.2</elasticsearch.version>
         <snakeyaml.version>1.23</snakeyaml.version>
         <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
         <spring-kafka.version>2.2.0.RELEASE</spring-kafka.version>
